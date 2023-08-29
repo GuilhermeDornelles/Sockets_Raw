@@ -1,85 +1,68 @@
-# from socket import socket, SOCK_RAW, AF_PACKET, htons
 import socket
-from socket import AF_PACKET, SOCK_RAW
+# from socket import AF_PACKET, SOCK_RAW
 import struct
+import re
+import constants as constants
 
 
 class RawSocket:
-    def __init__(self, payload, interface="eth0"):
-        # self.socket = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.IPPROTO_IP)
-        self.socket = socket.socket(AF_PACKET, SOCK_RAW)
-        self.source_IP = '192.168.1.101'
-        self.dest_IP = '192.168.1.1'
-        self.source_MAC = "a4:1f:72:f5:90:52"
-        self.dest_MAC = "a4:1f:72:f5:90:98"
-        self.payload = "[ "+ payload +" ]"
-        self.set_interface(interface)
-        self.package = self._create_package()
+    # TODO
+    # Tornar os atributos de endereços necessários conforme a implementação avançar
+    def __init__(self, payload="", source_mac="", dest_mac="", source_ip="", dest_ip="", protocol=constants.UNKNOWN_TYPE, net_interface="eth0",):
+        self.socket = socket.socket(
+            socket.AF_PACKET, socket.SOCK_RAW, protocol)
+        self.payload = "[ "+payload+" ]"
+        self.protocol = protocol
+        self._format_and_validate_addresses(
+            source_mac, dest_mac, source_ip, dest_ip)
+        self.set_interface(net_interface)
+        self.eth_header = self._create_eth_header()
 
-    def set_interface(self, interface = "eth0"):
+    def _format_and_validate_addresses(self, source_mac, dest_mac, source_ip, dest_ip):
+        try:
+            self.source_ip = self._format_and_validate_ip(source_ip)
+            self.dest_ip = self._format_and_validate_ip(dest_ip)
+            self.source_mac = self._format_and_validate_mac(source_mac)
+            self.dest_mac = self._format_and_validate_mac(dest_mac)
+        except Exception as err:
+            # TODO
+            # Formatar execuções com erro
+            print("Erro ao formatar endereço: ", err)
+            raise Exception
+
+    def set_interface(self, interface):
         self.socket.bind((interface, 0))
 
-    def _format_MAC(self, mac_addr: str):
-        mac_str = ""
-        for item in mac_addr.split(":"):
-            mac_str += "\x"+item
-        return mac_str
-
-    def _create_package(self):
-        version = 4
-        ihl = 5
-        tos = 0
-        length = 20 +len(self.payload)
-        id = 0
-        offset = 0
-        ttl = 255
-        checksum = 0
-        flags = 0
-
-        ver_ihl = (version << 4) + ihl
-        flags_offset = (flags << 13) + offset
-
+    def _create_eth_header(self):
         # 6 dest address, 6 source address and 2 for ethtype = IP
-        # eth_header = struct.pack("!6s6sH", b'\xa4\x1f\x72\xf5\x90\x52', b'\xa4\x1f\x72\xf5\x90\x98', 0x0800)
-        dest_mac = self._format_MAC(self.dest_MAC)
-        print(dest_mac)
-        source_mac = self._format_MAC(self.source_MAC)
-        print(source_mac)
+        protocol_type = self.protocol
 
-        eth_header = struct.pack('!6B6BH', dest_mac[0], dest_mac[1], dest_mac[2], dest_mac[3], dest_mac[4], dest_mac[5], source_mac[0], source_mac[1], source_mac[2], source_mac[3], source_mac[4], source_mac[5], 0x080)
-        
-        ip_header = struct.pack("!6s6sH", b'\xa4\x1f\x72\xf5\x90\x52', b'\xa4\x1f\x72\xf5\x90\x98', 0x0800)
-        package = eth_header
-        sent = self.socket.send(package)
-        print(sent)
+        # 6 bytes for destination mac
+        # 6 bytes for source mac
+        # 1 int for protocol type
+        pack = struct.pack("!6s6sH", self.dest_mac,
+                           self.source_mac, protocol_type)
+        return pack
 
-        dst_mac = [0xff, 0xff, 0xff, 0xff, 0xff, 0xff]
-        # src_mac = [0x00, 0x0a, 0x11, 0x11, 0x22, 0x22]
-        
-        # # Ethernet header
-        # eth_header = pack('!6B6BH', dst_mac[0], dst_mac[1], dst_mac[2], dst_mac[3], dst_mac[4], dst_mac[5], 
-        #     src_mac[0], src_mac[1], src_mac[2], src_mac[3], src_mac[4], src_mac[5], 0x0800)
-        
-        # source_ip = '192.168.1.101'
-        # dest_ip = '192.168.1.1'			# or socket.gethostbyname('www.google.com')
-        
-        # ip header fields
-        
-        # the ! in the pack format string means network order
-        
-        # build the final ip header (with checksum)
-        
-        # udp header fields
-        
-        # the ! in the pack format string means network order
-        
-        # final full packet - syn packets dont have any data
-        # packet = eth_header + ip_header + ucp_header + dhcp_header
-        # r = sendeth(packet, "enp1s0")
+    def _create_ip_protocol(self):
+        # TODO
+        # Criar a implementação do header de ip
+        return True
 
-    
+    def _format_and_validate_mac(self, mac: str):
+        aux_mac = mac.replace(":", "")
+        if len(aux_mac) != 12:
+            raise Exception
+        if not re.match("[0-9a-f]{2}([-:]?)[0-9a-f]{2}(\\1[0-9a-f]{2}){4}$", mac.lower()):
+            raise Exception
+
+        return bytes.fromhex(aux_mac)
+
+    def _format_and_validate_ip(self, ip: str):
+        # TODO
+        return ip
+
     def send_package(self):
-        self.socket.send(self.package)
-        # s = socket.socket(AF_PACKET, SOCK_RAW)
-        # s.bind((interface, 0))
-        # return s.send(eth_frame)
+        # TODO
+        # Concatenar outros headers e data conforme avançar a implementação
+        self.socket.send(self.eth_header)

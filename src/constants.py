@@ -1,0 +1,4 @@
+import socket
+
+IPV4_TYPE = 0x0800
+UNKNOWN_TYPE = socket.IPPROTO_IP  # FOR TESTS
