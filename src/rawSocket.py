@@ -12,13 +12,10 @@ class RawSocket:
     def __init__(self, source_mac="", dest_mac="", source_ip="", dest_ip="", protocol=constants.RAW_TYPE, net_interface="eth0",):
         self.socket = socket.socket(
             socket.AF_PACKET, socket.SOCK_RAW, protocol)
-            # socket.AF_INET, socket.SOCK_RAW, protocol)
-        # self.payload = "[ "+payload+" ]"
         self.protocol = protocol
         self._format_and_validate_addresses(
             source_mac, dest_mac, source_ip, dest_ip)
         self.set_interface(net_interface)
-        # self.eth_header = self._create_eth_header()
 
     def _format_and_validate_addresses(self, source_mac, dest_mac, source_ip, dest_ip):
         try:
@@ -42,14 +39,13 @@ class RawSocket:
         # 6 bytes for destination mac
         # 6 bytes for source mac
         # 1 int for protocol type
-        pack = pack("!6s6sH", self.dest_mac,
-                           self.source_mac, protocol_type)
-        return pack
+        pkg = pack("!6s6sH", self.dest_mac,
+                   self.source_mac, protocol_type)
+        return pkg
 
-    def _create_ip_protocol(self, data_len):
+    def _create_ip_header(self, data_len):
         # TODO TESTAR
         # referencia: https://github.com/vinayrp1/TCP-IP-implementation-using-RAW-sockets/blob/master/rawhttpget.py
-        
         # constants for IP header
         IHL = 5
         IP_VERSION = 4
@@ -60,18 +56,35 @@ class RawSocket:
         # MIN_TOTAL_LENGTH = IP_HDR_LEN + TCP_HDR_LEN
         FRAGMENT_STATUS = DONT_FRAGMENT
         TIME_TO_LIVE = 255
-        PROTOCOL = socket.IPPROTO_UDPLITE 
+
+        # TODO Fazer um handler que controla se vai usar tcp ou udp
+        PROTOCOL = socket.IPPROTO_UDPLITE
         # TODO PROTOCOL = socket.IPPROTO_TCP
-        src_IP = self.source_ip
-        dest_IP = self.dest_ip
-        pktID = random.randint(10000,50000) 							# some random number as ID in IP hdr
-        check_sum_of_hdr = 0 
-        total_len = IP_HDR_LEN + data_len 
-        IHL_VERSION = IHL + (IP_VERSION << 4) 
-        ip_header = pack('!BBHHHBBH4s4s' , IHL_VERSION, TYPE_OF_SERVICE, total_len, pktID, FRAGMENT_STATUS, TIME_TO_LIVE, PROTOCOL, check_sum_of_hdr, src_IP, dest_IP)
-        # TODO TESTAR check_sum_of_hdr = get_checksum(IP_header)
-        ip_header = pack('!BBHHHBBH4s4s' , IHL_VERSION, TYPE_OF_SERVICE, total_len, pktID, FRAGMENT_STATUS, TIME_TO_LIVE, PROTOCOL, check_sum_of_hdr, src_IP, dest_IP)	
+        src_ip = self.source_ip
+        dest_ip = self.dest_ip
+        # some random number as ID in IP hdr
+        pkt_id = random.randint(10000, 50000)
+        check_sum_of_hdr = 0
+        total_len = IP_HDR_LEN + data_len
+        IHL_VERSION = IHL + (IP_VERSION << 4)
+        # ip_header = pack('!BBHHHBBH4s4s', IHL_VERSION, TYPE_OF_SERVICE, total_len, pkt_id,
+        #                  FRAGMENT_STATUS, TIME_TO_LIVE, PROTOCOL, check_sum_of_hdr, src_ip, dest_ip)
+        # TODO TESTAR
+        # check_sum_of_hdr = self._get_checksum(ip_header)
+        ip_header = pack('!BBHHHBBH4s4s', IHL_VERSION, TYPE_OF_SERVICE, total_len, pkt_id,
+                         FRAGMENT_STATUS, TIME_TO_LIVE, PROTOCOL, check_sum_of_hdr, src_ip, dest_ip)
         return ip_header
+
+    # TODO
+    # Arrumar essa função pra gerar o checksum
+    # def _get_checksum(self, data):
+    #     sum = 0
+    #     for index in range(0, len(data), 2):
+    #         word = (ord(data[index]) << 8) + (ord(data[index+1]))
+    #         sum = sum + word
+    #     sum = (sum >> 16) + (sum & 0xffff)
+    #     sum = ~sum & 0xffff
+    #     return sum
 
     def _format_and_validate_mac(self, mac: str):
         aux_mac = mac.replace(":", "")
@@ -90,25 +103,25 @@ class RawSocket:
         aux_ip = ip.replace(".", "")
         try:
             int(aux_ip)
-            if not re.match("^((25[0-5]|(2[0-4]|1\d|[1-9]|)\d)\.?\b){4}$", ip.lower()):
+            if not re.match("[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}", "127.0.0.1"):
                 raise Exception
-            
+
             result = socket.inet_aton(ip)
-        except Exception as e: 
+        except Exception as e:
             raise e
         return result
 
     def send_package(self, data: str):
         # TODO
         # Concatenar outros headers e data conforme avançar a implementação
-        
+
         # tcp_headers = self._create_tcp_header()
         # udp_headers = self._create_udp_headers()
-        ip_headers = self._create_ip_header(data_len = len(data))
+        ip_headers = self._create_ip_header(data_len=len(data))
         eth_header = self._create_eth_header()
         # headers = eth_header + ip_header + tcp_header
         headers = eth_header + ip_headers
 
-        package = headers + data
+        package = headers + data.encode("utf-8")
 
         self.socket.send(package)
