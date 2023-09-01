@@ -9,10 +9,12 @@ import constants as constants
 class RawSocket:
     # TODO
     # Tornar os atributos de endereços necessários conforme a implementação avançar
-    def __init__(self, source_mac="", dest_mac="", source_ip="", dest_ip="", protocol=constants.RAW_TYPE, net_interface="eth0",):
+    def __init__(self, source_mac="", dest_mac="", source_ip="", dest_ip="", source_port=0, dest_port=0, protocol=constants.RAW_TYPE, net_interface="eth0",):
         self.socket = socket.socket(
             socket.AF_PACKET, socket.SOCK_RAW, protocol)
         self.protocol = protocol
+        self.source_port = source_port
+        self.dest_port = dest_port
         self._format_and_validate_addresses(
             source_mac, dest_mac, source_ip, dest_ip)
         self.set_interface(net_interface)
@@ -43,8 +45,7 @@ class RawSocket:
                    self.source_mac, protocol_type)
         return pkg
 
-    def _create_ip_header(self, data_len):
-        # TODO TESTAR
+    def _create_ip_header(self):
         # referencia: https://github.com/vinayrp1/TCP-IP-implementation-using-RAW-sockets/blob/master/rawhttpget.py
         # constants for IP header
         IHL = 5
@@ -52,39 +53,42 @@ class RawSocket:
         TYPE_OF_SERVICE = 0
         DONT_FRAGMENT = 0
         IP_HDR_LEN = 20
-        TCP_HDR_LEN = 20
-        # MIN_TOTAL_LENGTH = IP_HDR_LEN + TCP_HDR_LEN
         FRAGMENT_STATUS = DONT_FRAGMENT
         TIME_TO_LIVE = 255
 
         # TODO Fazer um handler que controla se vai usar tcp ou udp
-        PROTOCOL = socket.IPPROTO_UDPLITE
-        # TODO PROTOCOL = socket.IPPROTO_TCP
-        src_ip = self.source_ip
-        dest_ip = self.dest_ip
-        # some random number as ID in IP hdr
+        PROTOCOL = socket.IPPROTO_UDP
         pkt_id = random.randint(10000, 50000)
-        check_sum_of_hdr = 0
-        total_len = IP_HDR_LEN + data_len
+        checksum = 0
+        total_len = IP_HDR_LEN  # + data_len
         IHL_VERSION = IHL + (IP_VERSION << 4)
-        # ip_header = pack('!BBHHHBBH4s4s', IHL_VERSION, TYPE_OF_SERVICE, total_len, pkt_id,
-        #                  FRAGMENT_STATUS, TIME_TO_LIVE, PROTOCOL, check_sum_of_hdr, src_ip, dest_ip)
-        # TODO TESTAR
-        # check_sum_of_hdr = self._get_checksum(ip_header)
-        ip_header = pack('!BBHHHBBH4s4s', IHL_VERSION, TYPE_OF_SERVICE, total_len, pkt_id,
-                         FRAGMENT_STATUS, TIME_TO_LIVE, PROTOCOL, check_sum_of_hdr, src_ip, dest_ip)
+
+        ip_header = pack('!BBHHHBBH4s4s', IHL_VERSION, TYPE_OF_SERVICE, total_len,
+                         pkt_id, FRAGMENT_STATUS, TIME_TO_LIVE, PROTOCOL, checksum, self.source_ip, self.dest_ip)
+
+        checksum = self._get_checksum(ip_header)
+
+        ip_header = pack('!BBHHHBBH4s4s', IHL_VERSION, TYPE_OF_SERVICE, total_len,
+                         pkt_id, FRAGMENT_STATUS, TIME_TO_LIVE, PROTOCOL, checksum, self.source_ip, self.dest_ip)
+
         return ip_header
 
-    # TODO
-    # Arrumar essa função pra gerar o checksum
-    # def _get_checksum(self, data):
-    #     sum = 0
-    #     for index in range(0, len(data), 2):
-    #         word = (ord(data[index]) << 8) + (ord(data[index+1]))
-    #         sum = sum + word
-    #     sum = (sum >> 16) + (sum & 0xffff)
-    #     sum = ~sum & 0xffff
-    #     return sum
+    def _create_tcp_or_udp_header(self, data=None):
+        pass
+
+    def _get_checksum(self, data):
+        checksum = 0
+        # Divida o cabeçalho em palavras de 16 bits e some-as
+        for i in range(0, len(data), 2):
+            w = (data[i] << 8) + data[i + 1]
+            checksum += w
+        # Some o excesso de carry de 16 bits para obter o resultado final
+        while (checksum >> 16) > 0:
+            checksum = (checksum & 0xFFFF) + (checksum >> 16)
+        # Faça o complemento de 1 do resultado
+        checksum = ~checksum & 0xFFFF
+        print(checksum)
+        return checksum
 
     def _format_and_validate_mac(self, mac: str):
         aux_mac = mac.replace(":", "")
@@ -115,13 +119,12 @@ class RawSocket:
         # TODO
         # Concatenar outros headers e data conforme avançar a implementação
 
-        # tcp_headers = self._create_tcp_header()
-        # udp_headers = self._create_udp_headers()
-        ip_headers = self._create_ip_header(data_len=len(data))
+        ip_headers = self._create_ip_header(data_len=len(data.encode("utf-8")))
         eth_header = self._create_eth_header()
+        tcp_udp_header = self._create_tcp_or_udp_header()
         # headers = eth_header + ip_header + tcp_header
         headers = eth_header + ip_headers
 
-        package = headers + data.encode("utf-8")
+        package = headers  # + data.encode("utf-8")
 
         self.socket.send(package)
