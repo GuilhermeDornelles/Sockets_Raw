@@ -1,5 +1,6 @@
 from rawSocket import RawSocket
 from constants import IPV4_TYPE
+from src.models.clientSocket import ClientSocket
 
 CONFIG = {
     # "MAC_ORIGEM": "a4:1f:72:f5:90:52",
@@ -12,7 +13,7 @@ CONFIG = {
 
 
 def main():
-    socket = RawSocket(source_mac=CONFIG["MAC_ORIGEM"],     # Substituir pelos endereços MAC desejados
+    socket = ClientSocket(source_mac=CONFIG["MAC_ORIGEM"],     # Substituir pelos endereços MAC desejados
                        dest_mac=CONFIG["MAC_DESTINO"],
                        source_ip=CONFIG["IP_ORIGEM"],
                        dest_ip=CONFIG["IP_DESTINO"],
