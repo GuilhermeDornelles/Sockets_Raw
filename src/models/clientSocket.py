@@ -4,7 +4,7 @@ import socket
 from struct import pack
 import re
 import constants as constants
-from src.constants import format_and_validate_ip, format_and_validate_mac, get_checksum
+from constants import format_and_validate_ip, format_and_validate_mac, get_checksum
 
 
 class ClientSocket:
@@ -81,7 +81,7 @@ class ClientSocket:
         # TODO
         # Concatenar outros headers e data conforme avançar a implementação
 
-        ip_headers = self._create_ip_header(data_len=len(data.encode("utf-8")))
+        ip_headers = self._create_ip_header() #data_len=len(data.encode("utf-8")))
         eth_header = self._create_eth_header()
         tcp_udp_header = self._create_tcp_or_udp_header()
         # headers = eth_header + ip_header + tcp_header

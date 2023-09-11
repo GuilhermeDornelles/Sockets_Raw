@@ -1,5 +1,5 @@
 import socket
-
+import re
 IPV4_TYPE = 0x0800
 UNKNOWN_TYPE = socket.IPPROTO_IP  # FOR TESTS
 RAW_TYPE = socket.SOCK_RAW
