@@ -1,10 +1,9 @@
-from rawSocket import RawSocket
+from models.clientSocket import ClientSocket
 from constants import IPV4_TYPE
-from src.models.clientSocket import ClientSocket
 
 CONFIG = {
     # "MAC_ORIGEM": "a4:1f:72:f5:90:52",
-    "MAC_ORIGEM": "02:42:24:86:f7:fd",
+    "MAC_ORIGEM": "a4:1f:72:f5:90:5c",
     "MAC_DESTINO": "a4:1f:72:f5:90:98",
     "IP_ORIGEM": "192.168.0.1",
     "IP_DESTINO": "192.168.0.1",

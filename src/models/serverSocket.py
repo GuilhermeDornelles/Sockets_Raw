@@ -2,7 +2,7 @@
 
 import socket
 
-from src.constants import RAW_TYPE, format_and_validate_ip, format_and_validate_mac
+from constants import RAW_TYPE, format_and_validate_ip, format_and_validate_mac
 
 
 class ServerSocket:
