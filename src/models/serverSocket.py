@@ -1,24 +1,21 @@
 import socket
 from struct import unpack
-
-from constants import RAW_TYPE, format_and_validate_ip, format_and_validate_mac
+from utils import format_and_validate_ip, format_and_validate_mac
+import binascii
 
 
 class ServerSocket:
     # TODO
     # Tornar os atributos de endereços necessários conforme a implementação avançar
-    def __init__(self, source_mac="", dest_mac="", source_ip="", dest_ip="", source_port=0, dest_port=0, protocol=RAW_TYPE, net_interface="eth0",):
-        self.socket = socket.socket(
-            socket.AF_INET, socket.SOCK_RAW, socket.IPPROTO_TCP)
+    def __init__(self, source_port, dest_port, protocol, source_mac="", dest_mac="", source_ip="", dest_ip=""):
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.protocol = protocol
         self.source_port = source_port
         self.dest_port = dest_port
-        self._format_and_validate_addresses(
-            source_mac, dest_mac, source_ip, dest_ip)
-        # self.set_interface(net_interface)
+        self.config_socket(source_ip)
 
-    # def set_interface(self, interface):
-    #     self.socket.bind((interface, 0))
+    def config_socket(self, source_ip):
+        self.socket.bind((source_ip, self.source_port))
 
     def _format_and_validate_addresses(self, source_mac, dest_mac, source_ip, dest_ip):
 
@@ -34,19 +31,45 @@ class ServerSocket:
             raise Exception
 
     def run_server(self):
-        source_ip = ""
-        dest_port = ""
-        # loop until we get the packet destined for our port and IP addr
-        while (source_ip != str(self.source_port) and dest_port != str(self.source_port) or source_ip != "" and dest_port != ""):
-            recvPacket = self.socket.recv(65565)
-            print("Recv packet: {}".format(recvPacket))
-            # ipHeader = recvPacket[0:20]
-            # # unpacking to get IP header
-            # ipHdr = unpack("!2sH8s4s4s", ipHeader)
-            # source_ip = socket.inet_ntoa(ipHdr[3])
-            # tcpHeader = recvPacket[20:40]  # unpacking to get TCP header
-            # tcpHdr = unpack('!HHLLBBHHH', tcpHeader)
-            # dest_port = str(tcpHdr[1])
-            # destinationIP = ""
-            # dest_port = ""
-        return recvPacket
+        print("Server's up! Listen in port: {0}".format(self.source_port))
+        while True:
+            try:
+                pkt = self.socket.recvfrom(65535)
+                if pkt is not None:
+                    print('*****************************')
+                    print('** Informações da mensagem **')
+                    print('*****************************')
+                    eth_header = pkt[0][0:14]
+
+                    # parsing using unpack
+                    # 6 dest MAC, 6 host MAC, 2 ethType
+                    eth_header = unpack("!6s6s2s", eth_header)
+
+                    # using hexify to convert the tuple value NBO into Hex format
+                    binascii.hexlify(eth_header[0])
+                    binascii.hexlify(eth_header[1])
+                    binascii.hexlify(eth_header[2])
+
+                    ip_header = pkt[0][14:34]
+                    # 12s represents Identification, Time to Live, Protocol | Flags, Fragment Offset, Header Checksum
+                    ip_header = unpack("!12s4s4s", ip_header)
+
+                    print("Source IP address %s" % socket.inet_ntoa(
+                        ip_header[1]))  # network to ascii convertion
+                    print("Destination IP address %s" % socket.inet_ntoa(
+                        ip_header[2]))  # network to ascii convertion
+
+                    # unapck the TCP header (source and destination port numbers)
+                    udp_header = pkt[0][34:54]
+                    udp_header = unpack("!HH16s", udp_header)
+
+                    print("Source Source Port: %s" % udp_header[0])
+                    print("Source Destination Port: %s" % udp_header[1])
+            except KeyboardInterrupt:
+                break
+            except Exception as e:
+                print(f"Erro ao receber pacote UDP: {e}")
+        return True
+
+    def stop_server(self):
+        return self.socket.close()

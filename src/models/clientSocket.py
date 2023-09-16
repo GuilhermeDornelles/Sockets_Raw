@@ -1,24 +1,21 @@
 import random
 import socket
-# from socket import AF_PACKET, SOCK_RAW
 from struct import pack
 import re
-import constants as constants
-from constants import format_and_validate_ip, format_and_validate_mac, get_checksum
+from utils import format_and_validate_ip, format_and_validate_mac, get_checksum
 
 
 class ClientSocket:
     # TODO
     # Tornar os atributos de endereços necessários conforme a implementação avançar
-    def __init__(self, source_mac="", dest_mac="", source_ip="", dest_ip="", source_port=0, dest_port=0, protocol=constants.RAW_TYPE, net_interface="eth0",):
-        self.socket = socket.socket(
-            socket.AF_PACKET, socket.SOCK_RAW, protocol)
+    def __init__(self, source_port, dest_port, protocol, source_mac="", dest_mac="", source_ip="", dest_ip="", net_interface="eth0"):
+        self.socket = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.protocol = protocol
         self.source_port = source_port
         self.dest_port = dest_port
         self._format_and_validate_addresses(
             source_mac, dest_mac, source_ip, dest_ip)
-        self.set_interface(net_interface)
+        self.connect_socket(dest_ip, dest_port)
 
     def _format_and_validate_addresses(self, source_mac, dest_mac, source_ip, dest_ip):
         try:
@@ -32,8 +29,8 @@ class ClientSocket:
             print("Erro ao formatar endereço: ", err)
             raise Exception
 
-    def set_interface(self, interface):
-        self.socket.bind((interface, 0))
+    def connect_socket(self, dest_ip, dest_port):
+        self.socket.connect((dest_ip, dest_port))
 
     def _create_eth_header(self):
         # 6 dest address, 6 source address and 2 for ethtype = IP
@@ -99,9 +96,10 @@ class ClientSocket:
         eth_header = self._create_eth_header()
         ip_headers = self._create_ip_header(data)
         udp_header = self._create_udp_header(data)
-        # headers = eth_header + ip_header + tcp_header
-        headers = eth_header + ip_headers
+        headers = eth_header + ip_headers + udp_header
 
         package = headers + data.encode("utf-8")
-
         self.socket.send(package)
+
+    def close_socket(self):
+        return self.socket.close()

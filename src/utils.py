@@ -1,10 +1,6 @@
 import socket
 from struct import pack
 import re
-IPV4_TYPE = 0x0800
-UNKNOWN_TYPE = socket.IPPROTO_IP  # FOR TESTS
-RAW_TYPE = socket.SOCK_RAW
-
 
 
 def get_checksum(data):
@@ -39,6 +35,7 @@ def format_and_validate_ip(ip: str):
     except Exception as e:
         raise e
     return result
+
 
 def format_and_validate_mac(mac: str):
     aux_mac = mac.replace(":", "")
