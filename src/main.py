@@ -7,6 +7,8 @@ CONFIG = {
     "MAC_DESTINO": "a4:1f:72:f5:90:98",
     "IP_ORIGEM": "192.168.0.1",
     "IP_DESTINO": "192.168.0.1",
+    "PORTA_ORIGEM": "61",
+    "PORTA_DESTINO": "68",
     "INTERFACE_REDE": "eth0"
 }
 

@@ -1,4 +1,5 @@
 import socket
+from struct import pack
 import re
 IPV4_TYPE = 0x0800
 UNKNOWN_TYPE = socket.IPPROTO_IP  # FOR TESTS
@@ -8,6 +9,12 @@ RAW_TYPE = socket.SOCK_RAW
 
 def get_checksum(data):
     checksum = 0
+
+    data_len = len(data)
+    if (data_len % 2):
+        data_len += 1
+        data += pack('!B', 0)
+
     # Divida o cabeçalho em palavras de 16 bits e some-as
     for i in range(0, len(data), 2):
         w = (data[i] << 8) + data[i + 1]

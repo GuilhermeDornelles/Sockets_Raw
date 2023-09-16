@@ -46,14 +46,21 @@ class ClientSocket:
                    self.source_mac, protocol_type)
         return pkg
 
-    def _create_ip_header(self):
+    def _create_ip_header(self, data):
+        # TODO
+        # FRAGMENTAR IP
+
+
+
         # referencia: https://github.com/vinayrp1/TCP-IP-implementation-using-RAW-sockets/blob/master/rawhttpget.py
         # constants for IP header
+        DATA_LEN = len(data.encode("utf-8"))
         IHL = 5
         IP_VERSION = 4
         TYPE_OF_SERVICE = 0
         DONT_FRAGMENT = 0
         IP_HDR_LEN = 20
+        UDP_LEN = 8 + DATA_LEN
         FRAGMENT_STATUS = DONT_FRAGMENT
         TIME_TO_LIVE = 255
 
@@ -61,7 +68,7 @@ class ClientSocket:
         PROTOCOL = socket.IPPROTO_UDP
         pkt_id = random.randint(10000, 50000)
         checksum = 0
-        total_len = IP_HDR_LEN  # + data_len
+        total_len = IP_HDR_LEN + UDP_LEN
         IHL_VERSION = IHL + (IP_VERSION << 4)
 
         ip_header = pack('!BBHHHBBH4s4s', IHL_VERSION, TYPE_OF_SERVICE, total_len,
@@ -74,19 +81,35 @@ class ClientSocket:
 
         return ip_header
 
-    def _create_tcp_or_udp_header(self, data=None):
-        pass
+    def _create_udp_header(self, data=None):
+        PROTOCOL = socket.IPPROTO_UDP
+        SRC_PORT = self.source_port
+        DEST_PORT = self.dest_port
+        SRC_IP = self.source_ip
+        DEST_IP = self.dest_ip
+        data = data.encode()
+        FINAL_LEN = 8 + len(data)
+        checksum = 0
+
+        
+
+
+        header = SRC_IP + DEST_IP + pack('!BBH', 0, PROTOCOL, FINAL_LEN)
+        udp_header = pack('!4H', SRC_PORT, DEST_PORT, FINAL_LEN, checksum)
+        checksum = get_checksum(header + udp_header + data)
+        udp_header = pack('!4H', SRC_PORT, DEST_PORT, FINAL_LEN, checksum)
+        return udp_header
 
     def send_package(self, data: str):
         # TODO
         # Concatenar outros headers e data conforme avançar a implementação
-
-        ip_headers = self._create_ip_header() #data_len=len(data.encode("utf-8")))
         eth_header = self._create_eth_header()
-        tcp_udp_header = self._create_tcp_or_udp_header()
+        ip_headers = self._create_ip_header(data)
+        udp_header = self._create_udp_header(data)
         # headers = eth_header + ip_header + tcp_header
-        headers = eth_header + ip_headers
+        headers = eth_header + ip_headers + udp_header
 
-        package = headers  # + data.encode("utf-8")
+        package = headers + data.encode("utf-8")
 
         self.socket.send(package)
+
