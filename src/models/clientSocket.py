@@ -50,8 +50,6 @@ class ClientSocket:
         # TODO
         # FRAGMENTAR IP
 
-
-
         # referencia: https://github.com/vinayrp1/TCP-IP-implementation-using-RAW-sockets/blob/master/rawhttpget.py
         # constants for IP header
         DATA_LEN = len(data.encode("utf-8"))
@@ -63,8 +61,6 @@ class ClientSocket:
         UDP_LEN = 8 + DATA_LEN
         FRAGMENT_STATUS = DONT_FRAGMENT
         TIME_TO_LIVE = 255
-
-        # TODO Fazer um handler que controla se vai usar tcp ou udp
         PROTOCOL = socket.IPPROTO_UDP
         pkt_id = random.randint(10000, 50000)
         checksum = 0
@@ -91,9 +87,6 @@ class ClientSocket:
         FINAL_LEN = 8 + len(data)
         checksum = 0
 
-        
-
-
         header = SRC_IP + DEST_IP + pack('!BBH', 0, PROTOCOL, FINAL_LEN)
         udp_header = pack('!4H', SRC_PORT, DEST_PORT, FINAL_LEN, checksum)
         checksum = get_checksum(header + udp_header + data)
@@ -107,9 +100,8 @@ class ClientSocket:
         ip_headers = self._create_ip_header(data)
         udp_header = self._create_udp_header(data)
         # headers = eth_header + ip_header + tcp_header
-        headers = eth_header + ip_headers + udp_header
+        headers = eth_header + ip_headers
 
         package = headers + data.encode("utf-8")
 
         self.socket.send(package)
-
