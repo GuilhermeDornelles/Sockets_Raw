@@ -1,6 +1,7 @@
 import re
 import socket
 from struct import unpack
+from models.chat import Chat
 from models.message import Message
 from utils import format_and_validate_ip, format_and_validate_mac
 import binascii
@@ -18,6 +19,7 @@ class ServerSocket:
         self.config_socket(source_ip)
         self._format_and_validate_addresses(
             source_ip=source_ip, source_mac=source_mac, dest_mac=dest_mac)
+        self.chat = Chat(self.socket_control)
         # TODO criar classe Chat para o protocolo de aplicacao
         # vai receber as mensagens e tratar, se são controle ou dados, gerenciar clientes conectados, e etc
         # self.chat = Chat()
