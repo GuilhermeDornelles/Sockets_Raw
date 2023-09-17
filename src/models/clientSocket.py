@@ -92,7 +92,6 @@ class ClientSocket:
 
     def send_package(self, data: str):
         # TODO
-        # Concatenar outros headers e data conforme avançar a implementação
         eth_header = self._create_eth_header()
         ip_headers = self._create_ip_header(data)
         udp_header = self._create_udp_header(data)
