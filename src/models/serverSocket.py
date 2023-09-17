@@ -1,5 +1,7 @@
+import re
 import socket
 from struct import unpack
+from models.message import Message
 from utils import format_and_validate_ip, format_and_validate_mac
 import binascii
 
@@ -44,29 +46,31 @@ class ServerSocket:
                     # 6 dest MAC, 6 host MAC, 2 ethType
                     eth_header = unpack("!6s6s2s", eth_header)
 
-                    # using hexify to convert the tuple value NBO into Hex format
-                    binascii.hexlify(eth_header[0])
-                    binascii.hexlify(eth_header[1])
+                    # gambiarra do python pra transformar os macs em uma string com : separando cada byte
+                    bytes_src = binascii.hexlify(eth_header[0]).decode("utf-8")
+                    src_mac = ":".join(re.findall('..', bytes_src))
+                    bytes_dest = binascii.hexlify(
+                        eth_header[0]).decode("utf-8")
+                    dest_mac = ":".join(re.findall('..', bytes_dest))
                     binascii.hexlify(eth_header[2])
 
                     ip_header = pkt[0][14:34]
                     # 12s represents Identification, Time to Live, Protocol | Flags, Fragment Offset, Header Checksum
                     ip_header = unpack("!12s4s4s", ip_header)
-
                     # network to ascii convertion
-                    print(f"Source IP addr: {socket.inet_ntoa(ip_header[1])}")
-                    # network to ascii convertion
-                    print(
-                        f"Destination IP addr: {socket.inet_ntoa(ip_header[2])}")
+                    src_ip = socket.inet_ntoa(ip_header[1])
+                    dest_ip = socket.inet_ntoa(ip_header[2])
 
                     # unapck the TCP header (source and destination port numbers)
                     udp_header = pkt[0][34:42]
                     # H (unsigned short) = 2bytes
                     udp_header = unpack("!4H", udp_header)
-                    print(f"Source Port: {udp_header[0]}")
-                    print(f"Destination Port: {udp_header[1]}")
-                    data = pkt[0][42:]
-                    print(f"Message is: {data}")
+                    src_port = udp_header[0]
+                    dest_port = udp_header[1]
+                    data = pkt[0][42:].decode("utf-8")
+                    newMessage = Message(source_mac=src_mac, dest_mac=dest_mac, source_ip=src_ip,
+                                         dest_ip=dest_ip, source_port=src_port, dest_port=dest_port, data=data)
+                    print(newMessage)
             except KeyboardInterrupt:
                 print("Server is shutting down...")
                 self.stop_server()

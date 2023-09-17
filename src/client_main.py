@@ -26,7 +26,7 @@ def main():
                           protocol=IPPROTO_UDP
                           )
 
-    socket.send_package(data="mensagem de teste")
+    socket.send_package(data="Isto eh um teste")
 
 
 if __name__ == "__main__":
