@@ -80,7 +80,7 @@ class ClientSocket:
         DEST_PORT = self.dest_port
         SRC_IP = self.source_ip
         DEST_IP = self.dest_ip
-        data = data.encode()
+        data = data.encode("utf-8")
         FINAL_LEN = 8 + len(data)
         checksum = 0
 
