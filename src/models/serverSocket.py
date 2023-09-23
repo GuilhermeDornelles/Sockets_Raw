@@ -1,8 +1,6 @@
-import re
 import socket
-from struct import unpack
 from models.message import Command
-from utils import format_and_validate_ip, format_and_validate_mac
+from utils import format_and_validate_ip
 
 
 class ServerSocket:
@@ -28,19 +26,14 @@ class ServerSocket:
                 {self.control_port} for control messages""")
         while True:
             try:
+                # TODO
+                # criar uma thread para cada Socket, um controle e um dados
+                # Threads vao retornar as novas mensagens para o chat
                 data_pkt = self.socket_data.recvfrom(65535)
                 # control_pkt = self.socket_control.recvfrom(65535)
                 # print(data_pkt)
                 new_message = self._open_package(package=data_pkt)
 
-                # if data_pkt is not None or control_pkt is not None:
-                # if data_pkt is not None:
-                #     if data_pkt:
-                #         new_message = self._open_package(package=data_pkt)
-                # else:
-                #     new_message = self._open_package(package=control_pkt)
-                # TODO
-                # chat.receive(new_message)
                 return new_message
             except KeyboardInterrupt:
                 return None
