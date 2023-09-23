@@ -1,4 +1,4 @@
-from socket import IPPROTO_UDP
+from socket import SOCK_DGRAM
 from models.clientSocket import ClientSocket
 
 CONFIG = {
@@ -16,17 +16,15 @@ CONFIG = {
 
 
 def main():
-    socket = ClientSocket(source_mac=CONFIG["MAC_ORIGEM"],
-                          dest_mac=CONFIG["MAC_DESTINO"],
-                          source_ip=CONFIG["IP_ORIGEM"],
-                          dest_ip=CONFIG["IP_DESTINO"],
-                          source_port=CONFIG["PORTA_ORIGEM"],
+    socket = ClientSocket(dest_ip=CONFIG["IP_DESTINO"],
                           dest_port=CONFIG["PORTA_DESTINO"],
-                          net_interface=CONFIG["INTERFACE_REDE"],
-                          protocol=IPPROTO_UDP
+                          protocol=SOCK_DGRAM
+                          #   source_port=CONFIG["PORTA_ORIGEM"],
+                          #   net_interface=CONFIG["INTERFACE_REDE"],
                           )
 
     socket.send_package(data="Isto eh um teste")
+    socket.send_package(data="Teste dois !")
 
 
 if __name__ == "__main__":
