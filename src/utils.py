@@ -49,3 +49,10 @@ def format_and_validate_mac(mac: str):
     except Exception as e:
         raise e
     return result
+
+
+def super_print(text: str):
+    length = len(text)
+    print("#" * (length+6))
+    print(f"## {text} ##")
+    print("#" * (length+6))

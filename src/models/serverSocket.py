@@ -34,10 +34,8 @@ class ServerSocket:
             thread_control.start()
             while thread_data.is_alive() and thread_control.is_alive():
                 time.sleep(1)
-                # print("waiting both threads are alive...")
-                # thread_data.join()
-                # thread_control.join()
 
+            print("Enviou a mensagem para o chat")
             new_message = self._open_package(package=self.new_package)
             self.new_package = None
             return new_message
@@ -60,7 +58,7 @@ class ServerSocket:
 
     def _socket_receive_pkg(self, sckt: socket, msg_type):
         port = sckt.getsockname()[1]
-        if self.new_package is None:
-            print(f"Thread for Server starting in port {port} for {msg_type}")
-            self.new_package = sckt.recvfrom(1024)
+        # if self.new_package is None:
+        print(f"Thread for Server starting in port {port} for {msg_type}")
+        self.new_package = sckt.recvfrom(1024)
         print(f"New package saved by thread {msg_type}.")
