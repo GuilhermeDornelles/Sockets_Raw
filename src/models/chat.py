@@ -1,4 +1,5 @@
-from client import Client
+from typing import List
+from models.client import Client
 from models.message import Command
 from models.serverSocket import ServerSocket
 
@@ -12,7 +13,7 @@ class Chat:
     def __init__(self, server_socket: ServerSocket):
         self.server_socket = server_socket
         # Dicionário para guardar clientes conectados
-        self.clients = list(Client)
+        self.clients: List[Client] = []
 
     def start(self):
         while True:
@@ -22,7 +23,7 @@ class Chat:
                 print("Chat Server is shutting down...")
                 self.server_socket.stop_server()
                 break
-            print(command)
+            # print(command)
             # Verifica se os dados são do controle ou do protocolo de dados
             if not command.command.upper() in [self.CONNECT_COMMAND, self.EXIT_COMMAND]:
                 # Tratar dados do cliente
@@ -52,11 +53,9 @@ class Chat:
         #     self.remove_client(addr)
 
     def add_client(self, client):
-        # TODO
-        # logica p verificar se cliente com aquele nome / porta ja n esta conectado
+        # TODO logica p verificar se cliente com aquele nome / porta ja n esta conectado
         self.clients.append(client)
 
     def remove_client(self, client):
-        # TODO
-        # logica p verificar se cliente com aquele nome / porta esta conectado
+        # TODO logica p verificar se cliente com aquele nome / porta esta conectado
         self.clients.remove(client)

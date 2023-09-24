@@ -10,14 +10,21 @@ class ClientSocket:
         self.protocol = protocol
         self.dest_port = dest_port
         self.dest_ip = format_and_validate_ip(dest_ip)
-        self.connect_socket(dest_ip, dest_port)
+        self.server_addr = (dest_ip, dest_port)
+        self.connect_socket()
 
-    def connect_socket(self, dest_ip, dest_port):
-        self.socket.connect((dest_ip, dest_port))
+    def connect_socket(self):
+        # self.socket.connect((dest_ip, dest_port))
+        # buscando o IP e porta que sera usada como source
+        source_port = self.socket.getsockname()[1]
+        source_ip = self.socket.getsockname()[0]
+        # TODO
+        # fazer o socket client receber respostas tambem
+        self.socket.bind((source_ip, source_port))
 
     def send_package(self, data: str):
         package = data.encode("utf-8")
-        self.socket.send(package)
+        self.socket.sendto(package, self.server_addr)
 
     def close_socket(self):
         return self.socket.close()

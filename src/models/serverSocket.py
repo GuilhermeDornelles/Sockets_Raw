@@ -1,4 +1,6 @@
 import socket
+import threading
+import time
 from models.message import Command
 from utils import format_and_validate_ip
 
@@ -12,6 +14,7 @@ class ServerSocket:
         self.protocol = protocol
         self.bind_server(source_ip, data_port, control_port)
         self.source_ip = format_and_validate_ip(source_ip)
+        self.new_package = None
 
     def bind_server(self, source_ip, data_port, control_port):
         self.socket_data.bind((source_ip, data_port))
@@ -20,26 +23,29 @@ class ServerSocket:
         self.control_port = control_port
 
     def receive_package(self) -> Command:
-        print(
-            f"""Server's up! Listening on ports: 
-                {self.data_port} for data messages
-                {self.control_port} for control messages""")
-        while True:
-            try:
-                # TODO
-                # criar uma thread para cada Socket, um controle e um dados
-                # Threads vao retornar as novas mensagens para o chat
-                data_pkt = self.socket_data.recvfrom(65535)
-                # control_pkt = self.socket_control.recvfrom(65535)
-                # print(data_pkt)
-                new_message = self._open_package(package=data_pkt)
+        # WIP
+        # Threads vao salvar a nova mensagem em self.new_package para o chat
+        try:
+            thread_data = threading.Thread(
+                target=self._socket_receive_pkg, args=(self.socket_data, "data"), daemon=True)
+            thread_control = threading.Thread(
+                target=self._socket_receive_pkg, args=(self.socket_control, "control"), daemon=True)
+            thread_data.start()
+            thread_control.start()
+            while thread_data.is_alive() and thread_control.is_alive():
+                time.sleep(1)
+                # print("waiting both threads are alive...")
+                # thread_data.join()
+                # thread_control.join()
 
-                return new_message
-            except KeyboardInterrupt:
-                return None
-            except Exception as e:
-                print(f"Erro ao receber pacote UDP: {e}")
-                return None
+            new_message = self._open_package(package=self.new_package)
+            self.new_package = None
+            return new_message
+        except KeyboardInterrupt:
+            return None
+        # except Exception as e:
+        #     print(f"Erro ao receber pacote UDP: {e}")
+        #     return None
 
     def stop_server(self):
         self.socket_data.close()
@@ -51,3 +57,10 @@ class ServerSocket:
         ip = package[1][0]
         port = package[1][1]
         return Command(source_ip=ip, source_port=port, data=data)
+
+    def _socket_receive_pkg(self, sckt: socket, msg_type):
+        port = sckt.getsockname()[1]
+        if self.new_package is None:
+            print(f"Thread for Server starting in port {port} for {msg_type}")
+            self.new_package = sckt.recvfrom(1024)
+        print(f"New package saved by thread {msg_type}.")
