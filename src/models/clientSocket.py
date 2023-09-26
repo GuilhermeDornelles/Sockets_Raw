@@ -15,6 +15,8 @@ class ClientSocket:
         # self.server_addr = (dest_ip, dest_port)
         self.dest_ip = dest_ip
         # self.dest_ip = format_and_validate_ip(dest_ip)
+        
+        print(self.socket.getsockname())
         self.connect_socket()
 
     def connect_socket(self):

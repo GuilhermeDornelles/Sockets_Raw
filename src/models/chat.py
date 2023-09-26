@@ -1,33 +1,36 @@
 from typing import List
-from models.commands_enum import CommandsEnum
 from models.client import Client
 from models.message import Command
-from models.serverSocket import ServerSocket
-
+from models.serverSocket import ChatServerSocket, ControlServerSocket
 
 class Chat:
-    def __init__(self, server_socket: ServerSocket):
-        self.server_socket = server_socket
+    def __init__(self, chat_socket: ChatServerSocket, control_socket: ControlServerSocket):
+        self.chat_socket = chat_socket
+        self.control_socket = control_socket
         # Dicionário para guardar clientes conectados
         self.clients: List[Client] = []
 
     def start(self):
         while True:
             # Recebe dados do socket 1024 é o tamanho do que vai receber(tamanho maximo)
-            command = self.server_socket.receive_package()
+            chat_command = self.chat_socket.receive_package()
+            control_command = self.control_socket.receive_package()
             print("chat esta ouvindo..")
-            if command == None:
+            if chat_command == None:
                 print("Chat Server is shutting down...")
-                self.server_socket.stop_server()
+                self.chat_socket.stop_server()
+                break
+            if control_command == None:
+                print("Chat Server is shutting down...")
+                self.control_socket.stop_server()
                 break
             # print(command)
             # Verifica se os dados são do controle ou do protocolo de dados
-            if not command.command in [CommandsEnum.CONNECT.value, CommandsEnum.EXIT.value]:
-                # Tratar dados do cliente
-                self.handle_data(command)
-            else:
-                # Tratar dados de controle (novas conexões, desconexões, etc.)
-                self.handle_control(command)
+            if chat_command is not None:
+                self.handle_data(chat_command)
+
+            if control_command is not None:
+                self.handle_control(control_command)
 
     def handle_data(self, command: Command):
         # TODO
