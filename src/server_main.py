@@ -15,14 +15,18 @@ CONFIG = {
 
 
 def main():
-    server = ServerSocket(source_ip=CONFIG["IP_ORIGEM"],
-                          data_port=CONFIG["PORTA_DADOS"],
-                          control_port=CONFIG["PORTA_CONTROLE"],
-                          # passando UDP socket type
-                          protocol=SOCK_DGRAM
-                          )
+    data_server = ServerSocket(source_ip=CONFIG["IP_ORIGEM"],
+                               port=CONFIG["PORTA_DADOS"],
+                               # passando UDP socket type
+                               protocol=SOCK_DGRAM
+                               )
+    control_server = ServerSocket(source_ip=CONFIG["IP_ORIGEM"],
+                                  port=CONFIG["PORTA_CONTROLE"],
+                                  # passando UDP socket type
+                                  protocol=SOCK_DGRAM
+                                  )
 
-    chat = Chat(server_socket=server)
+    chat = Chat(data_server=data_server, control_server=control_server)
     chat.start()
 
 
