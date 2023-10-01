@@ -58,12 +58,15 @@ class Chat:
         print(
             f"Received control from {command.source_port}: {command.command}")
         if command.command == CommandsEnum.CONNECT.value:
-            if (self.add_client()):  # TODO -> Como passar as informações do cliente
+            new_client = Client(port=command.source_port,
+                                name=command.options[0])
+            if (self.add_client(new_client)):
                 print("Cliente registrado com sucesso")
             else:
                 print("Nome ou porta de cliente em uso!")
         elif command.command is CommandsEnum.EXIT.value:
-            if (self.remove_client()):  # TODO -> Como passar as informações do cliente
+            # client = filter(lambda obj: obj.attribute1 == target_attribute1 and obj.attribute2 == target_attribute2, my_objects)
+            if (self.remove_client(client)):
                 print("Cliente removido com sucesso")
             else:
                 print("Cliente não encontrado!")
