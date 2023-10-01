@@ -1,7 +1,7 @@
 import socket
 import threading
 import time
-from models.message import Command
+from models.command import Command
 from utils import format_and_validate_ip
 
 
