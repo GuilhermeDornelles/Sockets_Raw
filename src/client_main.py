@@ -23,14 +23,14 @@ def run_client_interface():
     super_print("BEM VINDO AO CHAT")
     client_name = str(
         input("Insira seu nome para se registrar no servidor: ")).strip()
-    print(f"Client name is {client_name}")
+    print(f"Nome do cliente: {client_name}")
     res = socket.send_package(
         f"{CommandsEnum.CONNECT.value} {client_name}", dest_port=CONTROL_PORT)
     super_print("Cliente registrado com sucesso.")
     command = ""
     while command != CommandsEnum.EXIT.value:
-        print("Tipos de comandos disponiveis para interacao no CHAT:")
-        print(" /privmsg <nome-destino> <mensagem> -> envia mensagem privada para cliente especifico")
+        print("Tipos de comandos disponíveis para interação no CHAT:")
+        print(" /privmsg <nome-destino> <mensagem> -> envia mensagem privada para cliente específico")
         print(" /msg <mensagem> -> envia mensagem para todos os clientes conectados")
         print(" /exit -> desconecta do CHAT")
         print("Envie um comando:")
@@ -39,7 +39,7 @@ def run_client_interface():
             res = socket.send_package(command, dest_port=CONTROL_PORT)
         else:
             res = socket.send_package(command, dest_port=DATA_PORT)
-        print(f"Comando enviado ao servidor.")
+        print("Comando enviado ao servidor.")
     super_print("Desconectando do servidor...")
     return
 

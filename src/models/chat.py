@@ -44,34 +44,47 @@ class Chat:
         # testar ver se esta recebendo a mensagem de maneira correta
         print(f"Received data from {command.source_port}: {command.command}")
 
-        # Exemplo de como mandar a mensagem para os outros clientes
-        # for client_addr in self.clients:
-        #     if client_addr != addr:
-        #         self.server_socket.sendto(data, client_addr)
+        # Manda para um cliente específico
+        if command.command == CommandsEnum.PRIVMSG.value:
+            # TODO => Como pegar a porta
+            self.data_server.sendto(self.data_message, '')
+        # Manda para todos os clientes conectados
+        elif command.command == CommandsEnum.MSG.value:
+            for client_addr in self.clients:
+                if client_addr != command.addr:
+                    self.data_server.sendto(self.data_message, client_addr)
 
     def handle_control(self, command: Command):
         print(
             f"Received control from {command.source_port}: {command.command}")
         if command.command == CommandsEnum.CONNECT.value:
-            # self.add_client(Client(port=command.source_port))
-            print("validated connect")
-            # return
-        # elif command.command is CommandsEnum.EXIT:
-        return
-        # Melhorar e falar com o grupo sobre implementação
-        # Adicionar e remover clientes
-        # if data == "connect":
-        #     self.add_client(addr)
-        # elif data == 'exit':
-        #     self.remove_client(addr)
+            if (self.add_client()):  # TODO -> Como passar as informações do cliente
+                print("Cliente registrado com sucesso")
+            else:
+                print("Nome ou porta de cliente em uso!")
+        elif command.command is CommandsEnum.EXIT:
+            if (self.remove_client()):  # TODO -> Como passar as informações do cliente
+                print("Cliente removido com sucesso")
+            else:
+                print("Cliente não encontrado!")
 
-    def add_client(self, client):
-        # TODO logica p verificar se cliente com aquele nome / porta ja n esta conectado
+        # return
+
+    def add_client(self, client) -> bool:
+        for clt in self.clients:
+            if clt.name == client.name or clt.port == client.port:
+                return False
+
         self.clients.append(client)
+        return True
 
     def remove_client(self, client):
-        # TODO logica p verificar se cliente com aquele nome / porta esta conectado
-        self.clients.remove(client)
+        for clt in self.clients:
+            if clt == client:
+                self.clients.remove(client)
+                return True
+
+        return False
 
     def _validate_and_handle(self, handle_func: callable, command: Command):
         if Command.command_is_valid(command) and Command.validate_command_options(command):

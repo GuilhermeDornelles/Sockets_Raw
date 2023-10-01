@@ -10,11 +10,9 @@ class ServerSocket:
     # Tornar os atributos de endereços necessários conforme a implementação avançar
     def __init__(self, protocol, port=12345, source_ip=""):
         self.socket = socket.socket(socket.AF_INET, protocol)
-        # self.socket_control = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         self.protocol = protocol
         self.bind_server(source_ip, port)
         self.port = port
-        # self.source_ip = format_and_validate_ip(source_ip)
 
     def bind_server(self, source_ip, port):
         self.socket.bind((source_ip, port))
