@@ -62,7 +62,7 @@ class Chat:
                 print("Cliente registrado com sucesso")
             else:
                 print("Nome ou porta de cliente em uso!")
-        elif command.command is CommandsEnum.EXIT:
+        elif command.command is CommandsEnum.EXIT.value:
             if (self.remove_client()):  # TODO -> Como passar as informações do cliente
                 print("Cliente removido com sucesso")
             else:
