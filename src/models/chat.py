@@ -45,14 +45,25 @@ class Chat:
         print(f"Received data from {command.source_port}: {command.command}")
 
         # Manda para um cliente específico
-        if command.command == CommandsEnum.PRIVMSG.value:
-            # TODO => Como pegar a porta
-            self.data_server.sendto(self.data_message, '')
+        if CommandsEnum.PRIVMSG.value in command:
+            dest_name = command.split()[1]
+            message = command.split()[2]
+
+            # Encontra o cliente de destino pelo nome
+            dest_client = next((client for client in self.clients if client.name == dest_name), None)
+
+            if dest_client:
+                # Envia a mensagem privada para o cliente de destino
+                self.data_server.send_package(
+                    f"{CommandsEnum.PRIVMSG.value} {message}", dest_port=dest_client.port)
+            else:
+                print(f"Cliente de destino '{dest_name}' não encontrado.")
         # Manda para todos os clientes conectados
-        elif command.command == CommandsEnum.MSG.value:
-            for client_addr in self.clients:
-                if client_addr != command.addr:
-                    self.data_server.sendto(self.data_message, client_addr)
+        elif CommandsEnum.MSG.value in command:
+            message = command.split()[1]
+            for client in self.clients:
+                self.data_server.send_package(
+                    f"{CommandsEnum.MSG.value} {message}", dest_port=client.port)
 
     def handle_control(self, command: Command):
         print(

@@ -35,11 +35,15 @@ def run_client_interface():
         print(" /exit -> desconecta do CHAT")
         print("Envie um comando:")
         command = str(input()).strip()
-        if command == CommandsEnum.EXIT.value:
+        message = command.split()[1] # Pega a mensagem após o comando
+        if CommandsEnum.EXIT.value in command:
             res = socket.send_package(command, dest_port=CONTROL_PORT)
-        else:
+        elif CommandsEnum.PRIVMSG.value in command:
             res = socket.send_package(command, dest_port=DATA_PORT)
-        print("Comando enviado ao servidor.")
+        elif CommandsEnum.MSG.value in command:
+            res = socket.send_package(f"{CommandsEnum.MSG.value} {message}", dest_port=DATA_PORT)
+        else :
+            print("Comando enviado ao servidor.")
     super_print("Desconectando do servidor...")
     return
 
