@@ -40,26 +40,27 @@ class Chat:
                 return
 
     def handle_data(self, command: Command):
-        # TODO
-        # testar ver se esta recebendo a mensagem de maneira correta
-        print(f"Received data from {command.source_port}: {command.command}")
-
         # Manda para um cliente específico
         if command.command == CommandsEnum.PRIVMSG.value:
-            # TODO => Como pegar a porta
-            # client = filter(lambda c: c.port ==
-            #                 command.source_port, self.clients)
-            # self.data_server.send_to(command.options[1], client)
-            print("oi")
+            # TODO command precisa ter referencia para o destino da mensagem (name)
+            client = self._find_client_from_name(name=command.dest)
+            # TODO trocar command.options[1] para command.text
+            if (self.data_server.send_package(command.options[1], client)):
+                print(f"Mensagem enviada para o {client}")
+            else:
+                print(f"Erro ao enviar mensagem para {client}")
         # Manda para todos os clientes conectados
         elif command.command == CommandsEnum.MSG.value:
-            for client_addr in self.clients:
-                if client_addr != command.addr:
-                    self.data_server.sendto(self.data_message, client_addr)
+            error = False
+            for client in self.clients:
+                if not (self.data_server.send_package(command.options[0], client)):
+                    error = True
+            if not error:
+                print(f"Mensagem enviada para todos os clients.")
+            else:
+                print(f"Erro ao enviar mensagem para todos os clients.")
 
     def handle_control(self, command: Command):
-        print(
-            f"Received control from {command.source_port}: {command.command}")
         if command.command == CommandsEnum.CONNECT.value:
             new_client = Client(ip=command.source_ip,
                                 port=command.source_port,
@@ -69,10 +70,9 @@ class Chat:
             else:
                 print("Nome ou porta de cliente em uso!")
         elif command.command in CommandsEnum.EXIT.value:
-            client = next(filter(lambda c: c.port ==
-                                 command.source_port, self.clients), None)
+            client = self._find_client_from_command(command)
             if (self.remove_client(client)):
-                print("Cliente removido com sucesso")
+                print(f"Cliente {client} com sucesso")
             else:
                 print("Cliente não encontrado!")
 
@@ -115,3 +115,11 @@ class Chat:
                 self.control_message = self.control_server.receive_package()
             else:
                 time.sleep(0.2)
+
+    def _find_client_from_command(self, command: Command) -> Client:
+        return next(filter(lambda c: c.port ==
+                           command.source_port, self.clients), None)
+
+    def _find_client_from_name(self, name: str) -> Client:
+        return next(filter(lambda c: c.name ==
+                           name, self.clients), None)
