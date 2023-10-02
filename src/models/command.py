@@ -9,6 +9,8 @@ class Command:
         # self.dest_port = dest_port
         self.options = list()
         self.command, self.options = self._split_data(data)
+        # TODO tratar a mensagem para pegar texto tipo frase, com espaço em branco e tudo
+        # self.command, self.options, self.text = self._split_data(data)
 
     def __str__(self) -> str:
         return f"""

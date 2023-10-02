@@ -47,7 +47,10 @@ class Chat:
         # Manda para um cliente específico
         if command.command == CommandsEnum.PRIVMSG.value:
             # TODO => Como pegar a porta
-            self.data_server.sendto(self.data_message, '')
+            # client = filter(lambda c: c.port ==
+            #                 command.source_port, self.clients)
+            # self.data_server.send_to(command.options[1], client)
+            print("oi")
         # Manda para todos os clientes conectados
         elif command.command == CommandsEnum.MSG.value:
             for client_addr in self.clients:
@@ -58,20 +61,20 @@ class Chat:
         print(
             f"Received control from {command.source_port}: {command.command}")
         if command.command == CommandsEnum.CONNECT.value:
-            new_client = Client(port=command.source_port,
+            new_client = Client(ip=command.source_ip,
+                                port=command.source_port,
                                 name=command.options[0])
             if (self.add_client(new_client)):
                 print("Cliente registrado com sucesso")
             else:
                 print("Nome ou porta de cliente em uso!")
-        elif command.command is CommandsEnum.EXIT.value:
-            # client = filter(lambda obj: obj.attribute1 == target_attribute1 and obj.attribute2 == target_attribute2, my_objects)
+        elif command.command in CommandsEnum.EXIT.value:
+            client = next(filter(lambda c: c.port ==
+                                 command.source_port, self.clients), None)
             if (self.remove_client(client)):
                 print("Cliente removido com sucesso")
             else:
                 print("Cliente não encontrado!")
-
-        # return
 
     def add_client(self, client) -> bool:
         for clt in self.clients:
@@ -82,12 +85,11 @@ class Chat:
         return True
 
     def remove_client(self, client):
-        for clt in self.clients:
-            if clt == client:
-                self.clients.remove(client)
-                return True
-
-        return False
+        try:
+            self.clients.remove(client)
+            return True
+        except ValueError:
+            return False
 
     def _validate_and_handle(self, handle_func: callable, command: Command):
         if Command.command_is_valid(command) and Command.validate_command_options(command):
