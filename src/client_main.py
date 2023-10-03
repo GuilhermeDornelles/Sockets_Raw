@@ -34,24 +34,28 @@ def run_client_interface():
         super_print("Cliente registrado com sucesso.")
     command = ""
     while connected:
-        print("Tipos de comandos disponíveis para interação no CHAT:")
-        print(" /privmsg <nome-destino> <mensagem> -> envia mensagem privada para cliente específico")
-        print(" /msg <mensagem> -> envia mensagem para todos os clientes conectados")
-        print(" /exit -> desconecta do CHAT")
-        print("Envie um comando:")
-        command = str(input()).strip()
+        try:
+            print("Tipos de comandos disponíveis para interação no CHAT:")
+            print(
+                " /privmsg <nome-destino> <mensagem> -> envia mensagem privada para cliente específico")
+            print(" /msg <mensagem> -> envia mensagem para todos os clientes conectados")
+            print(" /exit -> desconecta do CHAT")
+            print("Envie um comando:")
+            command = str(input()).strip()
 
-        tp = command.split()[0]
-        if tp in [member.value for member in CommandsEnum]:
-            if command == CommandsEnum.EXIT.value:
-                client.send_package(command, dest_port=CONTROL_PORT)
-                connected = False
+            tp = command.split()[0]
+            if tp in [member.value for member in CommandsEnum]:
+                if command == CommandsEnum.EXIT.value:
+                    client.send_package(command, dest_port=CONTROL_PORT)
+                    connected = False
+                else:
+                    client.send_package(command, dest_port=DATA_PORT)
+                print("\nComando enviado ao servidor.\n")
             else:
-                client.send_package(command, dest_port=DATA_PORT)
-            print("\nComando enviado ao servidor.\n")
-        else:
-            print("\nComando desconhecido.\n")
-
+                print("\nComando desconhecido.\n")
+        except KeyboardInterrupt:
+            client.send_package("/exit", dest_port=CONTROL_PORT)
+            connected = False
     super_print("Desconectando do servidor...")
     return True
 

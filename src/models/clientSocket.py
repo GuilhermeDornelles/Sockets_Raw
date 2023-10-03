@@ -32,9 +32,13 @@ class ClientSocket:
     def close_socket(self):
         return self.socket.close()
 
+    def _open_package(self, package: tuple) -> str:
+        data = package[0].decode("utf-8")
+        return data
+
     def _start_receive(self):
         port = self.socket.getsockname()[1]
         while True:
             print(f"Client is receiving messages on port {port}")
             package = self.socket.recvfrom(1024)
-            super_print(package)
+            print(f"Nova mensagem de {self._open_package(package)}")

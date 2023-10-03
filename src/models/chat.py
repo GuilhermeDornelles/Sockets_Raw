@@ -42,16 +42,18 @@ class Chat:
     def handle_data(self, command: Command):
         # Manda para um cliente específico
         if command.type == CommandsEnum.PRIVMSG.value:
-            client = self._find_client_from_name(name=command.dest_name)
-            if (self.data_server.send_package(command.data, client)):
-                print(f"Mensagem enviada para o {client}")
+            dest_client = self._find_client_from_name(name=command.dest_name)
+            source_client = self._find_client_from_command(command=command)
+            if (self.data_server.send_package(f"{source_client.name}: {command.data}", dest_client)):
+                print(f"Mensagem enviada para o {dest_client}")
             else:
-                print(f"Erro ao enviar mensagem para {client}")
+                print(f"Erro ao enviar mensagem para {dest_client}")
         # Manda para todos os clientes conectados
         elif command.type == CommandsEnum.MSG.value:
             error = False
-            for client in self.clients:
-                if client.port != command.source_port and not (self.data_server.send_package(command.data, client)):
+            for dest_client in self.clients:
+                source_client = self._find_client_from_command(command=command)
+                if dest_client.port != command.source_port and not (self.data_server.send_package(f"{source_client.name}: {command.data}", dest_client)):
                     error = True
             if not error:
                 print("Mensagem enviada para todos os clients.")
