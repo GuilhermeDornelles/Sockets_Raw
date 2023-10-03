@@ -51,7 +51,7 @@ class Chat:
         elif command.type == CommandsEnum.MSG.value:
             error = False
             for client in self.clients:
-                if not (self.data_server.send_package(command.data, client)):
+                if client.port != command.source_port and not (self.data_server.send_package(command.data, client)):
                     error = True
             if not error:
                 print("Mensagem enviada para todos os clients.")
