@@ -1,5 +1,7 @@
 import socket
-from utils import format_and_validate_ip
+import threading
+import time
+from utils import format_and_validate_ip, super_print
 
 
 class ClientSocket:
@@ -12,21 +14,27 @@ class ClientSocket:
         self.dest_ip = dest_ip
         self.connect_socket()
 
+    def start(self):
+        thread_receiver = threading.Thread(
+            target=self._start_receive, args=(), daemon=True)
+        thread_receiver.start()
+        time.sleep(1)
+
     def connect_socket(self):
-        # self.socket.connect((dest_ip, dest_port))
-        # buscando o IP e porta que sera usada como source
         source_port = self.socket.getsockname()[1]
         source_ip = self.socket.getsockname()[0]
-        # TODO
-        # fazer o socket client receber respostas tambem
         self.socket.bind((source_ip, source_port))
 
     def send_package(self, data: str, dest_port: int):
         package = data.encode("utf-8")
         self.socket.sendto(package, (self.dest_ip, dest_port))
 
-    def receive_package(self):
-        self.new_package = self.socket.recvfrom(1024)
-
     def close_socket(self):
         return self.socket.close()
+
+    def _start_receive(self):
+        port = self.socket.getsockname()[1]
+        while True:
+            print(f"Client is receiving messages on port {port}")
+            package = self.socket.recvfrom(1024)
+            super_print(package)

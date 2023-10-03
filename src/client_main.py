@@ -15,16 +15,16 @@ CONTROL_PORT = 12346
 
 
 def run_client_interface():
-    socket = ClientSocket(dest_ip=CONFIG["IP_DESTINO"], protocol=SOCK_DGRAM)
+    client = ClientSocket(dest_ip=CONFIG["IP_DESTINO"], protocol=SOCK_DGRAM)
 
     connected = False
-
+    client.start()
     super_print("BEM VINDO AO CHAT")
     client_name = str(
         input("Insira seu nome para se registrar no servidor: "))
     print(f"Nome do cliente: {client_name}")
     try:
-        socket.send_package(
+        client.send_package(
             f"{CommandsEnum.CONNECT.value} {client_name}", dest_port=CONTROL_PORT)
         connected = True
     except Exception:
@@ -44,10 +44,10 @@ def run_client_interface():
         tp = command.split()[0]
         if tp in [member.value for member in CommandsEnum]:
             if command == CommandsEnum.EXIT.value:
-                socket.send_package(command, dest_port=CONTROL_PORT)
+                client.send_package(command, dest_port=CONTROL_PORT)
                 connected = False
             else:
-                socket.send_package(command, dest_port=DATA_PORT)
+                client.send_package(command, dest_port=DATA_PORT)
             print("\nComando enviado ao servidor.\n")
         else:
             print("\nComando desconhecido.\n")
