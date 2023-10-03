@@ -15,45 +15,49 @@ CONTROL_PORT = 12346
 
 
 def run_client_interface():
-    socket = ClientSocket(dest_ip=CONFIG["IP_DESTINO"],
-                          #   dest_port=CONFIG["PORTA_DESTINO"],
-                          protocol=SOCK_DGRAM
-                          )
+    socket = ClientSocket(dest_ip=CONFIG["IP_DESTINO"], protocol=SOCK_DGRAM)
+
+    connected = False
 
     super_print("BEM VINDO AO CHAT")
     client_name = str(
-        input("Insira seu nome para se registrar no servidor: ")).strip()
+        input("Insira seu nome para se registrar no servidor: "))
     print(f"Nome do cliente: {client_name}")
-    res = socket.send_package(
-        f"{CommandsEnum.CONNECT.value} {client_name}", dest_port=CONTROL_PORT)
-    super_print("Cliente registrado com sucesso.")
+    try:
+        socket.send_package(
+            f"{CommandsEnum.CONNECT.value} {client_name}", dest_port=CONTROL_PORT)
+        connected = True
+    except Exception:
+        super_print("Erro ao se registrar, finalizando")
+        exit(-1)
+    if connected:
+        super_print("Cliente registrado com sucesso.")
     command = ""
-    while command != CommandsEnum.EXIT.value:
+    while connected:
         print("Tipos de comandos disponíveis para interação no CHAT:")
         print(" /privmsg <nome-destino> <mensagem> -> envia mensagem privada para cliente específico")
         print(" /msg <mensagem> -> envia mensagem para todos os clientes conectados")
         print(" /exit -> desconecta do CHAT")
         print("Envie um comando:")
         command = str(input()).strip()
-        if command == CommandsEnum.EXIT.value:
-            res = socket.send_package(command, dest_port=CONTROL_PORT)
+
+        tp = command.split()[0]
+        if tp in [member.value for member in CommandsEnum]:
+            if command == CommandsEnum.EXIT.value:
+                socket.send_package(command, dest_port=CONTROL_PORT)
+                connected = False
+            else:
+                socket.send_package(command, dest_port=DATA_PORT)
+            print("\nComando enviado ao servidor.\n")
         else:
-            res = socket.send_package(command, dest_port=DATA_PORT)
-        print("Comando enviado ao servidor.")
+            print("\nComando desconhecido.\n")
+
     super_print("Desconectando do servidor...")
-    return
+    return True
 
 
 def main():
     run_client_interface()
-    # socket = ClientSocket(dest_ip=CONFIG["IP_DESTINO"],
-    #                       #   dest_port=CONFIG["PORTA_DESTINO"],
-    #                       protocol=SOCK_DGRAM
-    #                       )
-
-    # socket.send_package(data="/CONNECT", dest_port=12345)
-    # socket.send_package(data="Qualquer coisa", dest_port=12346)
-    # socket.send_package(data="Teste dois !")
 
 
 if __name__ == "__main__":

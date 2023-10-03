@@ -41,42 +41,42 @@ class Chat:
 
     def handle_data(self, command: Command):
         # Manda para um cliente específico
-        if command.command == CommandsEnum.PRIVMSG.value:
-            # TODO command precisa ter referencia para o destino da mensagem (name)
-            client = self._find_client_from_name(name=command.dest)
-            # TODO trocar command.options[1] para command.text
-            if (self.data_server.send_package(command.options[1], client)):
+        if command.type == CommandsEnum.PRIVMSG.value:
+            client = self._find_client_from_name(name=command.dest_name)
+            if (self.data_server.send_package(command.data, client)):
                 print(f"Mensagem enviada para o {client}")
             else:
                 print(f"Erro ao enviar mensagem para {client}")
         # Manda para todos os clientes conectados
-        elif command.command == CommandsEnum.MSG.value:
+        elif command.type == CommandsEnum.MSG.value:
             error = False
             for client in self.clients:
-                if not (self.data_server.send_package(command.options[0], client)):
+                if not (self.data_server.send_package(command.data, client)):
                     error = True
             if not error:
-                print(f"Mensagem enviada para todos os clients.")
+                print("Mensagem enviada para todos os clients.")
             else:
-                print(f"Erro ao enviar mensagem para todos os clients.")
+                print("Erro ao enviar mensagem para todos os clients.")
 
     def handle_control(self, command: Command):
-        if command.command == CommandsEnum.CONNECT.value:
+        if command.type == CommandsEnum.CONNECT.value:
             new_client = Client(ip=command.source_ip,
                                 port=command.source_port,
-                                name=command.options[0])
+                                name=command.data)
             if (self.add_client(new_client)):
-                print("Cliente registrado com sucesso")
+                print(f"Cliente {new_client} registrado com sucesso")
+                print(f"\n{self.clients}\n")
             else:
                 print("Nome ou porta de cliente em uso!")
-        elif command.command in CommandsEnum.EXIT.value:
+        elif command.type in CommandsEnum.EXIT.value:
             client = self._find_client_from_command(command)
             if (self.remove_client(client)):
                 print(f"Cliente {client} com sucesso")
+                print(f"\n{self.clients}\n")
             else:
                 print("Cliente não encontrado!")
 
-    def add_client(self, client) -> bool:
+    def add_client(self, client: Client) -> bool:
         for clt in self.clients:
             if clt.name == client.name or clt.port == client.port:
                 return False
@@ -84,7 +84,7 @@ class Chat:
         self.clients.append(client)
         return True
 
-    def remove_client(self, client):
+    def remove_client(self, client: Client):
         try:
             self.clients.remove(client)
             return True
@@ -92,11 +92,10 @@ class Chat:
             return False
 
     def _validate_and_handle(self, handle_func: callable, command: Command):
-        if Command.command_is_valid(command) and Command.validate_command_options(command):
+        if Command.type_is_valid(command):
             handle_func(command)
         else:
-            print(
-                f"Command not valid: {command.command}")
+            print(f"Command not valid: {command.type}")
 
     def _thread_data_start(self):
         port = self.data_server.port
@@ -104,6 +103,8 @@ class Chat:
             if self.data_message is None:
                 print(f"Listening on port {port}")
                 self.data_message = self.data_server.receive_package()
+                if self.data_message is not None:
+                    print(f"Received message: {self.data_message}")
             else:
                 time.sleep(0.2)
 
@@ -113,6 +114,8 @@ class Chat:
             if self.control_message is None:
                 print(f"Listening on port {port}")
                 self.control_message = self.control_server.receive_package()
+                if self.control_message is not None:
+                    print(f"Received message: {self.control_message}")
             else:
                 time.sleep(0.2)
 

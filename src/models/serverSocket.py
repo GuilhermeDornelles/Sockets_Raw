@@ -7,8 +7,6 @@ from utils import format_and_validate_ip
 
 
 class ServerSocket:
-    # TODO
-    # Tornar os atributos de endereços necessários conforme a implementação avançar
     def __init__(self, protocol, port=12345, source_ip=""):
         self.socket = socket.socket(socket.AF_INET, protocol)
         self.protocol = protocol
@@ -35,5 +33,8 @@ class ServerSocket:
         return Command(source_ip=ip, source_port=port, data=data)
 
     def send_package(self, text: str, client: Client):
-        text = text.encode("utf-8")
-        return self.socket.sendto(text, (client.ip, client.port))
+        try:
+            self.socket.sendto(text.encode("utf-8"), (client.ip, client.port))
+        except Exception:
+            return False
+        return True

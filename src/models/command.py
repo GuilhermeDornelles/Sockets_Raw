@@ -4,39 +4,37 @@ from models.commands_enum import CommandsEnum
 class Command:
     def __init__(self, source_port: int, source_ip: str, data: str):
         self.source_ip = source_ip
-        # self.dest_ip = dest_ip
         self.source_port = source_port
-        # self.dest_port = dest_port
-        self.options = list()
-        self.command, self.options = self._split_data(data)
-        # TODO tratar a mensagem para pegar texto tipo frase, com espaço em branco e tudo
-        # self.command, self.options, self.text = self._split_data(data)
+        self.type = None
+        self.dest_name = None
+        self.data = None
+        self._split_data(data)
 
-    def __str__(self) -> str:
+    def __repr__(self) -> str:
         return f"""
-Command: '{self.command}';
-    options = {self.options};
-    source ip = {self.source_ip};
-    source port = {self.source_port};
-"""
+            Command_type: '{self.type}';
+            Destination_name: {self.dest_name};
+            Data: {self.data};
+            Source_address: {self.source_ip}:{self.source_port}.
+        """
 
+    # Atribui os campos conforme o tipo da mensagem
     def _split_data(self, data: str):
         parts = data.split(" ")
-        return parts[0], parts[1:]
+        self.type = parts[0]
+        dt = ''
+        if self.type == CommandsEnum.PRIVMSG.value:
+            self.dest_name = parts[1]
+            for pt in parts[2:]:
+                dt += " " + pt
+        elif ((self.type == CommandsEnum.CONNECT.value) or (self.type == CommandsEnum.MSG.value)):
+            for pt in parts[1:]:
+                dt += " " + pt
+
+        if (dt):
+            print(f"data: {dt}")
+            self.data = dt.strip()
 
     @staticmethod
-    def command_is_valid(command: 'Command') -> bool:
-        return command.command in [member.value for member in CommandsEnum]
-
-    @staticmethod
-    def validate_command_options(command: 'Command') -> bool:
-        if command.command == CommandsEnum.CONNECT.value:
-            return len(command.options) == 1
-        elif command.command == CommandsEnum.EXIT.value:
-            return len(command.options) == 0
-        elif command.command == CommandsEnum.PRIVMSG.value:
-            return len(command.options) == 2
-        elif command.command == CommandsEnum.MSG.value:
-            return len(command.options) == 1
-        else:
-            return False
+    def type_is_valid(command: 'Command') -> bool:
+        return command.type in [member.value for member in CommandsEnum]
