@@ -32,6 +32,12 @@ class ClientSocket:
     def close_socket(self):
         return self.socket.close()
 
+    # def _open_package(self, package: tuple) -> Command:
+    #     data = package[0].decode("utf-8")
+    #     ip = package[1][0]
+    #     port = package[1][1]
+    #     return Command(source_ip=ip, source_port=port, data=data)
+
     def _start_receive(self):
         port = self.socket.getsockname()[1]
         while True:
