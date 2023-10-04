@@ -2,6 +2,8 @@ from socket import SOCK_DGRAM
 from models.commands_enum import CommandsEnum
 from models.clientSocket import ClientSocket
 from utils import super_print
+import os
+import signal
 
 CONFIG = {
     "IP_ORIGEM": "127.0.0.1",
@@ -15,26 +17,28 @@ CONTROL_PORT = 12346
 
 
 def run_client_interface():
-    client = ClientSocket(dest_ip=CONFIG["IP_DESTINO"], protocol=SOCK_DGRAM)
 
-    connected = False
-    client.start()
-    super_print("BEM VINDO AO CHAT")
-    client_name = str(
-        input("Insira seu nome para se registrar no servidor: "))
-    print(f"Nome do cliente: {client_name}")
+    client = ClientSocket(
+        dest_ip=CONFIG["IP_DESTINO"], protocol=SOCK_DGRAM, disconnect_function=disconnect)
+
     try:
-        client.send_package(
-            f"{CommandsEnum.CONNECT.value} {client_name}", dest_port=CONTROL_PORT)
-        connected = True
-    except Exception:
-        super_print("Erro ao se registrar, finalizando")
-        exit(-1)
-    if connected:
-        super_print("Cliente registrado com sucesso.")
-    command = ""
-    while connected:
+        connected = False
+        client.start()
+        super_print("BEM VINDO AO CHAT")
+        client_name = str(
+            input("Insira seu nome para se registrar no servidor: "))
+        print(f"Nome do cliente: {client_name}")
         try:
+            client.send_package(
+                f"{CommandsEnum.CONNECT.value} {client_name}", dest_port=CONTROL_PORT)
+            connected = True
+        except Exception:
+            disconnect(-1)
+        if connected:
+            super_print("Cliente registrado com sucesso.")
+        command = ""
+        while connected:
+
             print("Tipos de comandos disponíveis para interação no CHAT:")
             print(
                 " /privmsg <nome-destino> <mensagem> -> envia mensagem privada para cliente específico")
@@ -53,11 +57,23 @@ def run_client_interface():
                 print("\nComando enviado ao servidor.\n")
             else:
                 print("\nComando desconhecido.\n")
-        except KeyboardInterrupt:
-            client.send_package("/exit", dest_port=CONTROL_PORT)
-            connected = False
-    super_print("Desconectando do servidor...")
+    except KeyboardInterrupt:
+        client.send_package("/exit", dest_port=CONTROL_PORT)
+        connected = False
+        disconnect()
     return True
+
+
+def disconnect(exit_code: int = 0):
+    if exit_code == -1:
+        super_print("Erro ao se registrar, finalizando sessão")
+    elif exit_code == -2:
+        super_print("Servidor desconectado, finalizando sessão")
+    elif exit_code == -3:
+        super_print("Nome ou porta já utilizado")
+    else:
+        super_print("Desconectando do servidor...")
+    os.kill(os.getpid(), signal.SIGTERM)
 
 
 def main():

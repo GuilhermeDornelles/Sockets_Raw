@@ -5,6 +5,9 @@ from models.commands_enum import CommandsEnum
 from models.client import Client
 from models.command import Command
 from models.serverSocket import ServerSocket
+from utils import super_print
+EXIT_COMMAND = '/exit'
+DISCONNECT_COMMAND = '/disconnect'
 
 
 class Chat:
@@ -35,6 +38,8 @@ class Chat:
                     self.data_message = None
                 time.sleep(1)
             except KeyboardInterrupt:
+                if len(self.clients) > 0:
+                    self.disconnect_all_clients()
                 self.control_server.stop_server()
                 self.data_server.stop_server()
                 return
@@ -70,6 +75,8 @@ class Chat:
                 print(f"\n{self.clients}\n")
             else:
                 print("Nome ou porta de cliente em uso!")
+                self._disconnect_client(new_client)
+
         elif command.type in CommandsEnum.EXIT.value:
             client = self._find_client_from_command(command)
             if (self.remove_client(client)):
@@ -86,12 +93,24 @@ class Chat:
         self.clients.append(client)
         return True
 
+    def _disconnect_client(self, client: Client, command: str = ''):
+        self.data_server.send_package(command, client)
+        return True
+
     def remove_client(self, client: Client):
         try:
             self.clients.remove(client)
+            self._disconnect_client(client, EXIT_COMMAND)
             return True
         except ValueError:
             return False
+
+    def disconnect_all_clients(self):
+        super_print("Desconectando todos os clientes")
+        for client in self.clients:
+            self._disconnect_client(client, EXIT_COMMAND)
+        super_print("Todos clientes desconectados")
+        return True
 
     def _validate_and_handle(self, handle_func: callable, command: Command):
         if Command.type_is_valid(command):
