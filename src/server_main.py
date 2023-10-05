@@ -1,4 +1,4 @@
-from socket import SOCK_DGRAM
+from socket import SOCK_DGRAM, SOCK_STREAM
 from models.chat import Chat
 from models.serverSocket import ServerSocket
 
@@ -15,19 +15,23 @@ CONFIG = {
 
 
 def main():
-    data_server = ServerSocket(source_ip=CONFIG["IP_ORIGEM"],
-                               port=CONFIG["PORTA_DADOS"],
-                               # passando UDP socket type
-                               protocol=SOCK_DGRAM
-                               )
-    control_server = ServerSocket(source_ip=CONFIG["IP_ORIGEM"],
-                                  port=CONFIG["PORTA_CONTROLE"],
-                                  # passando UDP socket type
-                                  protocol=SOCK_DGRAM
-                                  )
+    try:
+        # UDP
+        # data_server = ServerSocket(source_ip=CONFIG["IP_ORIGEM"], port=CONFIG["PORTA_DADOS"], protocol=SOCK_DGRAM)
+        # control_server = ServerSocket(source_ip=CONFIG["IP_ORIGEM"], port=CONFIG["PORTA_CONTROLE"], protocol=SOCK_DGRAM)
 
-    chat = Chat(data_server=data_server, control_server=control_server)
-    chat.start()
+        # TCP
+        data_server = ServerSocket(
+            source_ip=CONFIG["IP_ORIGEM"], port=CONFIG["PORTA_DADOS"], protocol=SOCK_STREAM)
+        control_server = ServerSocket(
+            source_ip=CONFIG["IP_ORIGEM"], port=CONFIG["PORTA_CONTROLE"], protocol=SOCK_STREAM)
+
+        chat = Chat(data_server=data_server, control_server=control_server)
+        chat.start()
+    except KeyboardInterrupt:
+        data_server.stop_server()
+        control_server.stop_server()
+    return True
 
 
 if __name__ == "__main__":
