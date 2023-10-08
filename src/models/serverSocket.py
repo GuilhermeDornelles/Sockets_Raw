@@ -75,11 +75,18 @@ class ServerSocketTCP(ServerSocket):
         # package = self.socket.recvfrom(1024)
         print(f"Opening package {package}")
         new_message = self._open_package(package=package, addr=_addr)
+        # new_message = self._open_package(package=package)
         return new_message
 
     def stop_server(self):
         print(f"Socket on port {self.port} is shutting down..")
         self.socket.close()
+
+    # def _open_package(self, package) -> Command:
+    #     data = package[0].decode("utf-8")
+    #     ip = package[0][0]
+    #     port = package[1][1]
+    #     return Command(source_ip=ip, source_port=port, data=data)
 
     def _open_package(self, package, addr) -> Command:
         data = package.decode("utf-8")

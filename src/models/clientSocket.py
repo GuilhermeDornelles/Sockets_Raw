@@ -133,7 +133,7 @@ class ClientSocketTCP(ClientSocket):
         source_ip = self.socket.getsockname()[0]
         self.socket.bind((source_ip, source_port))
         self.socket.listen(1)
-        self.socket.connect((self.dest_ip, self.dest_port))
+        # self.socket.connect((self.dest_ip, self.dest_port))
 
     def send_package(self, data: str, dest_port: int):
         if self.closed:
@@ -149,7 +149,7 @@ class ClientSocketTCP(ClientSocket):
                 return
         else:
             package = data.encode("utf-8")
-        # self.socket.connect((self.dest_ip, self.dest_port))
+        self.socket.connect((self.dest_ip, self.dest_port))
         self.socket.sendall(package)
 
         # self.socket.sendto(package, (self.dest_ip, dest_port))
