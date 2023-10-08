@@ -19,12 +19,12 @@ CONTROL_PORT = 12346
 def run_client_interface():
 
     # UDP
-    # client = ClientSocket(
-    #     dest_ip=CONFIG["IP_DESTINO"], protocol=SOCK_DGRAM, disconnect_function=disconnect)
+    client = ClientSocket(
+        dest_ip=CONFIG["IP_DESTINO"], protocol=SOCK_DGRAM, disconnect_function=disconnect)
 
     # TCP
-    client = ClientSocket(
-        dest_ip=CONFIG["IP_DESTINO"], protocol=SOCK_STREAM, disconnect_function=disconnect)
+    # client = ClientSocket(
+    #     dest_ip=CONFIG["IP_DESTINO"], protocol=SOCK_STREAM, disconnect_function=disconnect)
     try:
         connected = False
         client.start()

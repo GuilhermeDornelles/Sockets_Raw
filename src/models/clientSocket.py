@@ -1,3 +1,5 @@
+import threading
+import time
 from socket import SOCK_DGRAM, SOCK_STREAM
 import socket
 
@@ -12,19 +14,17 @@ class ClientSocket:
         self.connect_socket()
 
     def start(self):
-        # self.thread_receiver = threading.Thread(
-        #     target=self._start_receive, args=(), daemon=True)
-        # self.thread_receiver.start()
-        # time.sleep(1)
+        self.thread_receiver = threading.Thread(
+            target=self._start_receive, args=(), daemon=True)
+        self.thread_receiver.start()
+        time.sleep(1)
         pass
 
     def connect_socket(self):
-        # source_port = self.socket.getsockname()[1]
-        # source_ip = self.socket.getsockname()[0]
-        # self.socket.bind((source_ip, source_port))
-        # print("bind()")
+        source_port = self.socket.getsockname()[1]
+        source_ip = self.socket.getsockname()[0]
+        self.socket.bind((source_ip, source_port))
         # self.socket.listen(1)
-        print("listen()")
 
     def send_package(self, data: str, dest_port: int):
         try:
@@ -74,7 +74,7 @@ class ClientSocket:
     def _start_receive(self):
         port = self.socket.getsockname()[1]
         while True:
-            print(f"Client is receiving messages on port {port}")
+            # print(f"Client is receiving messages on port {port}")
             if self.socket.type == SOCK_DGRAM:
                 data = self._open_package_udp(self.socket.recvfrom(1024))
             else:
@@ -83,9 +83,7 @@ class ClientSocket:
                 data = self._open_package_tcp(package)
 
             if data is not None:
-                data = self._open_package(data)
                 parts = data.split(" ")
-                print(parts)
                 if '/exit' in data:
                     self.close_socket()
                     self.disconnect_function(-2)

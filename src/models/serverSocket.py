@@ -2,7 +2,6 @@ from socket import SOCK_DGRAM, SOCK_STREAM
 import socket
 from models.client import Client
 from models.command import Command
-from utils import format_and_validate_ip
 
 
 class ServerSocket:
@@ -10,12 +9,11 @@ class ServerSocket:
         self.socket = socket.socket(socket.AF_INET, protocol)
         self.protocol = protocol
         self.port = port
-        # if protocol == SOCK_DGRAM:
         self.config_socket(source_ip, port)
 
     def config_socket(self, source_ip, port):
         self.socket.bind((source_ip, port))
-        self.socket.listen(1)
+        # self.socket.listen(1)
 
     def receive_package(self) -> Command:
         try:
