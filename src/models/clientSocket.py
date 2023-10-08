@@ -120,13 +120,15 @@ class ClientSocketTCP(ClientSocket):
         self.dest_port = dest_port
         self.disconnect_function = disconnect_function
         self.closed = False
+        self.connected = False
         self.connect_socket()
 
     def start(self):
-        self.thread_receiver = threading.Thread(
-            target=self._start_receive, args=(), daemon=True)
-        self.thread_receiver.start()
-        time.sleep(1)
+        # self.thread_receiver = threading.Thread(
+        #     target=self._start_receive, args=(), daemon=True)
+        # self.thread_receiver.start()
+        # time.sleep(1)
+        pass
 
     def connect_socket(self):
         source_port = self.socket.getsockname()[1]
@@ -149,7 +151,9 @@ class ClientSocketTCP(ClientSocket):
                 return
         else:
             package = data.encode("utf-8")
-        self.socket.connect((self.dest_ip, self.dest_port))
+        if not self.connected:
+            self.socket.connect((self.dest_ip, self.dest_port))
+            self.connected = True
         self.socket.sendall(package)
 
         # self.socket.sendto(package, (self.dest_ip, dest_port))
@@ -177,8 +181,11 @@ class ClientSocketTCP(ClientSocket):
             # connection, _addr = self.socket.accept()
             # package = connection.recv(1024)
             # connection.close()
-            package = self.socket.recv(1024)
+            connection, _addr = self.socket.accept()
+            # package = self.socket.recv(1024)
+            package = connection.recv(1024)
             data = self._open_package(package)
+            connection.close()
             if data == "":
                 break
             parts = data.split(" ")

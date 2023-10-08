@@ -293,7 +293,8 @@ class ChatTCP:
         while True:
             if self.data_message is None:
                 print(f"Listening on port {port}")
-                self.data_message = self.data_server.receive_package()
+                # self.data_message = self.data_server.receive_package()
+                self.data_message = self.data_server.connect_clients()
                 if self.data_message is not None:
                     print(f"Received message: {self.data_message}")
             else:
@@ -304,7 +305,8 @@ class ChatTCP:
         while True:
             if self.control_message is None:
                 print(f"Listening on port {port}")
-                self.control_message = self.control_server.receive_package()
+                # self.control_message = self.control_server.receive_package()
+                self.control_message = self.control_server.connect_clients()
                 if self.control_message is not None:
                     print(f"Received message: {self.control_message}")
             else:

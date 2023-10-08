@@ -63,21 +63,29 @@ class ServerSocketTCP(ServerSocket):
         self.protocol = protocol
         self.bind_server(source_ip, port)
         self.port = port
+        self.closed = False
 
     def bind_server(self, source_ip, port):
         self.socket.bind((source_ip, port))
         self.socket.listen(1)
 
-    def receive_package(self) -> Command:
-        connection, _addr = self.socket.accept()
-        print("accept()")
+    def receive_package(self, connection, addr) -> Command:
         package = connection.recv(1024)
-        connection.close()
+        # connection.close()
         # package = self.socket.recvfrom(1024)
         print(f"Opening package {package}")
-        new_message = self._open_package(package=package, addr=_addr)
-        # new_message = self._open_package(package=package)
+        new_message = self._open_package(package=package, addr=addr)
         return new_message
+
+    def connect_clients(self) -> Command:
+        while not self.closed:
+
+            connection, addr = self.socket.accept()
+
+            if connection and addr:
+                client_handler = threading.Thread(
+                    target=self.receive_package, args=(connection, addr))
+                client_handler.start()
 
     def stop_server(self):
         print(f"Socket on port {self.port} is shutting down..")
