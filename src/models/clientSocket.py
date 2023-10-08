@@ -27,6 +27,7 @@ class ClientSocket:
         print("listen()")
 
     def send_package(self, data: str, dest_port: int):
+<<<<<<< HEAD
         try:
             if self.closed:
                 return
@@ -52,11 +53,17 @@ class ClientSocket:
                 self.socket.sendto(package, (self.dest_ip, dest_port))
         except Exception as e:
             print(e)
+=======
+        if not self.closed:
+            package = data.encode("utf-8")
+            self.socket.sendto(package, (self.dest_ip, dest_port))
+>>>>>>> parent of de74f73 (fechando o pastel do UDP)
 
     def close_socket(self):
         self.closed = True
         return self.socket.close()
 
+<<<<<<< HEAD
     def _open_package_udp(self, package: tuple) -> str:
         return package[0].decode("utf-8")
 
@@ -70,13 +77,29 @@ class ClientSocket:
             return True
         except Exception:
             return False
+=======
+    def _open_package(self, package: tuple) -> str:
+        data = package[0].decode("utf-8")
+        return data
+>>>>>>> parent of de74f73 (fechando o pastel do UDP)
 
     def _start_receive(self):
         port = self.socket.getsockname()[1]
         while True:
             print(f"Client is receiving messages on port {port}")
+<<<<<<< HEAD
             if self.socket.type == SOCK_DGRAM:
                 data = self._open_package_udp(self.socket.recvfrom(1024))
+=======
+            data = self._open_package(self.socket.recvfrom(1024))
+            if '/exit' in data:
+                self.close_socket()
+                self.disconnect_function(-2)
+            elif '/disconnect' in data:
+                self.close_socket()
+                self.disconnect_function(-3)
+
+>>>>>>> parent of de74f73 (fechando o pastel do UDP)
             else:
                 connection, addr = self.socket.accept()
                 package = connection.recv(1024)
