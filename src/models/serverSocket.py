@@ -72,6 +72,7 @@ class ServerSocketTCP(ServerSocket):
         connection, _addr = self.socket.accept()
         print("accept()")
         package = connection.recv(1024)
+        connection.close()
         # package = self.socket.recvfrom(1024)
         print(f"Opening package {package}")
         new_message = self._open_package(package=package, addr=_addr)
@@ -99,11 +100,10 @@ class ServerSocketTCP(ServerSocket):
 
     def send_package(self, text: str, client: Client):
         try:
-            # connection, _addr = self.socket.connect((client.ip, client.port))
+            # self.socket.connect((client.ip, client.port))
             sent = self.socket.sendto(text.encode(
                 "utf-8"), (client.ip, client.port))
             print(f"sent {sent}")
-            # connection.close()
         except Exception:
             return False
         return True

@@ -132,7 +132,7 @@ class ClientSocketTCP(ClientSocket):
         source_port = self.socket.getsockname()[1]
         source_ip = self.socket.getsockname()[0]
         self.socket.bind((source_ip, source_port))
-        self.socket.listen(1)
+        # self.socket.listen(1)
         # self.socket.connect((self.dest_ip, self.dest_port))
 
     def send_package(self, data: str, dest_port: int):
@@ -173,6 +173,10 @@ class ClientSocketTCP(ClientSocket):
         port = self.socket.getsockname()[1]
         while True:
             print(f"Client is receiving messages on port {port}")
+            # self.socket.listen(1)
+            # connection, _addr = self.socket.accept()
+            # package = connection.recv(1024)
+            # connection.close()
             package = self.socket.recv(1024)
             data = self._open_package(package)
             if data == "":
@@ -191,7 +195,7 @@ class ClientSocketTCP(ClientSocket):
                 if f_created:
                     print("Arquivo criado com sucesso.")
                 else:
-                    print("Erro ao criar arquivo com connteúdo.")
+                    print("Erro ao criar arquivo com conteúdo.")
 
             else:
                 print(f"Nova mensagem de {data}")

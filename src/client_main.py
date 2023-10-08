@@ -39,7 +39,8 @@ def run_client_interface():
             client.send_package(
                 f"{CommandsEnum.CONNECT.value} {client_name}", dest_port=CONTROL_PORT)
             connected = True
-        except Exception:
+        except Exception as e:
+            print(e)
             disconnect(-1)
         if connected:
             super_print("Cliente registrado com sucesso.")
