@@ -61,7 +61,6 @@ class ClientSocket:
             print(f"Client is receiving messages on port {port}")
             data = self._open_package(self.socket.recvfrom(1024))
             parts = data.split(" ")
-            print(parts)
             if '/exit' in data:
                 self.close_socket()
                 self.disconnect_function(-2)
