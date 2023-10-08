@@ -8,6 +8,7 @@ class Command:
         self.type = None
         self.dest_name = None
         self.data = None
+        self.file_path = None
         self._split_data(data)
 
     def __repr__(self) -> str:
@@ -27,12 +28,19 @@ class Command:
             self.dest_name = parts[1]
             for pt in parts[2:]:
                 dt += " " + pt
-        elif ((self.type == CommandsEnum.CONNECT.value) or (self.type == CommandsEnum.MSG.value)):
+        elif self.type in [CommandsEnum.CONNECT.value, CommandsEnum.MSG.value]:
             for pt in parts[1:]:
                 dt += " " + pt
+        elif self.type == CommandsEnum.FILE.value:
+            self.file_path = parts[1]
+            dt = data.split(self.file_path)[-1]
+        elif self.type == CommandsEnum.PRIVFILE.value:
+            self.dest_name = parts[1]
+            self.file_path = parts[2]
+            dt = data.split(self.file_path)[-1]
+        # elif self.type == CommandsEnum.FILE.value
 
         if (dt):
-            print(f"data: {dt}")
             self.data = dt.strip()
 
     @staticmethod

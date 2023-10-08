@@ -6,3 +6,5 @@ class CommandsEnum(Enum):
     CONNECT = "/connect"
     PRIVMSG = "/privmsg"
     MSG = "/msg"
+    FILE = "/file"
+    PRIVFILE = "/privfile"
