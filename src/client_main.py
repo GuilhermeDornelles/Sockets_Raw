@@ -1,4 +1,4 @@
-from socket import SOCK_DGRAM, SOCK_STREAM
+from socket import SOCK_DGRAM
 from models.commands_enum import CommandsEnum
 from models.clientSocket import ClientSocket
 from utils import super_print
@@ -18,13 +18,9 @@ CONTROL_PORT = 12346
 
 def run_client_interface():
 
-    # UDP
-    # client = ClientSocket(
-    #     dest_ip=CONFIG["IP_DESTINO"], protocol=SOCK_DGRAM, disconnect_function=disconnect)
-
-    # TCP
     client = ClientSocket(
-        dest_ip=CONFIG["IP_DESTINO"], protocol=SOCK_STREAM, disconnect_function=disconnect)
+        dest_ip=CONFIG["IP_DESTINO"], protocol=SOCK_DGRAM, disconnect_function=disconnect)
+
     try:
         connected = False
         client.start()
@@ -42,11 +38,14 @@ def run_client_interface():
             super_print("Cliente registrado com sucesso.")
         command = ""
         while connected:
-
-            print("Tipos de comandos disponíveis para interação no CHAT:")
+            print("Comandos disponíveis para interação no CHAT:")
             print(
                 " /privmsg <nome-destino> <mensagem> -> envia mensagem privada para cliente específico")
             print(" /msg <mensagem> -> envia mensagem para todos os clientes conectados")
+            print(
+                " /privfile <nome-destino> <filepath> -> envia um arquivo para o cliente específico")
+            print(
+                " /file <filepath> -> envia um arquivo para todos os clientes conectados")
             print(" /exit -> desconecta do CHAT")
             print("Envie um comando:")
             command = str(input()).strip()

@@ -47,23 +47,37 @@ class Chat:
     def handle_data(self, command: Command):
         # Manda para um cliente específico
         if command.type == CommandsEnum.PRIVMSG.value:
-            dest_client = self._find_client_from_name(name=command.dest_name)
             source_client = self._find_client_from_command(command=command)
-            if (self.data_server.send_package(f"{source_client.name}: {command.data}", dest_client)):
-                print(f"Mensagem enviada para o {dest_client}")
-            else:
-                print(f"Erro ao enviar mensagem para {dest_client}")
+            pack = f"{source_client.name}: {command.data}"
+            self._send_unicast_data(package=pack, command=command)
+        elif command.type == CommandsEnum.PRIVFILE.value:
+            pack = f"/file {command.file_path} {command.data}"
+            self._send_unicast_data(package=pack, command=command)
         # Manda para todos os clientes conectados
         elif command.type == CommandsEnum.MSG.value:
-            error = False
-            for dest_client in self.clients:
-                source_client = self._find_client_from_command(command=command)
-                if dest_client.port != command.source_port and not (self.data_server.send_package(f"{source_client.name}: {command.data}", dest_client)):
-                    error = True
-            if not error:
-                print("Mensagem enviada para todos os clients.")
-            else:
-                print("Erro ao enviar mensagem para todos os clients.")
+            source_client = self._find_client_from_command(command=command)
+            pack = f"{source_client.name}: {command.data}"
+            self._send_broadcast_data(package=pack, command=command)
+        elif command.type == CommandsEnum.FILE.value:
+            pack = f"/file {command.file_path} {command.data}"
+            self._send_broadcast_data(package=pack, command=command)
+
+    def _send_unicast_data(self, package, command):
+        dest_client = self._find_client_from_name(name=command.dest_name)
+        if (self.data_server.send_package(package, dest_client)):
+            print(f"Mensagem enviada para o {dest_client}")
+        else:
+            print(f"Erro ao enviar mensagem para {dest_client}")
+
+    def _send_broadcast_data(self, package, command):
+        error = False
+        for dest_client in self.clients:
+            if dest_client.port != command.source_port and not (self.data_server.send_package(package, dest_client)):
+                error = True
+        if not error:
+            print("Mensagem enviada para todos os clients.")
+        else:
+            print("Erro ao enviar mensagem para todos os clients.")
 
     def handle_control(self, command: Command):
         if command.type == CommandsEnum.CONNECT.value:
