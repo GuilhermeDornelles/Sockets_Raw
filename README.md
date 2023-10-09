@@ -20,7 +20,7 @@ No terminal do pode-se utilizar os seguintes comandos no terminal do cliente<br/
 /exit
 ```
 
-# Comandos de controle
+# Comandos de dados
 
 ```python
 
