@@ -1,6 +1,6 @@
 from socket import SOCK_DGRAM, SOCK_STREAM
 from models.commands_enum import CommandsEnum
-from models.clientSocket import ClientSocket
+from models.clientSocket import ClientSocket, ClientSocketTCP, ClientSocketUDP
 from utils import super_print
 import os
 import signal
@@ -15,16 +15,19 @@ CONFIG = {
 DATA_PORT = 12345
 CONTROL_PORT = 12346
 
+# SOCKET_PROTOCOL = SOCK_DGRAM
+SOCKET_PROTOCOL = SOCK_STREAM
+
 
 def run_client_interface():
+    if SOCKET_PROTOCOL == SOCK_STREAM:
+        client = ClientSocketTCP(
+            dest_ip=CONFIG["IP_DESTINO"], protocol=SOCKET_PROTOCOL, disconnect_function=disconnect, dest_port=DATA_PORT)
 
-    # UDP
-    client = ClientSocket(
-        dest_ip=CONFIG["IP_DESTINO"], protocol=SOCK_DGRAM, disconnect_function=disconnect)
-
-    # TCP
-    # client = ClientSocket(
-    #     dest_ip=CONFIG["IP_DESTINO"], protocol=SOCK_STREAM, disconnect_function=disconnect)
+    elif SOCKET_PROTOCOL == SOCK_DGRAM:
+        client = ClientSocketUDP(
+            dest_ip=CONFIG["IP_DESTINO"], protocol=SOCKET_PROTOCOL, disconnect_function=disconnect)
+        
     try:
         connected = False
         client.start()
@@ -36,7 +39,8 @@ def run_client_interface():
             client.send_package(
                 f"{CommandsEnum.CONNECT.value} {client_name}", dest_port=CONTROL_PORT)
             connected = True
-        except Exception:
+        except Exception as e:
+            print(e)
             disconnect(-1)
         if connected:
             super_print("Cliente registrado com sucesso.")

@@ -1,6 +1,6 @@
 from socket import SOCK_DGRAM, SOCK_STREAM
-from models.chat import Chat
-from models.serverSocket import ServerSocket
+from models.chat import Chat, ChatTCP
+from models.serverSocket import ServerSocketTCP, ServerSocketUDP
 
 CONFIG = {
     "MAC_ORIGEM": "00:22:48:4d:10:e9",    # Substituir pelos endereços MAC desejados
@@ -12,28 +12,40 @@ CONFIG = {
     # Substituir pelo nome da interface de rede da máquina
     "INTERFACE_REDE": "lo"
 }
+# SOCKET_PROTOCOL = SOCK_DGRAM
+SOCKET_PROTOCOL = SOCK_STREAM
 
 
 def main():
-    try:
-        # UDP
-        data_server = ServerSocket(
-            source_ip=CONFIG["IP_ORIGEM"], port=CONFIG["PORTA_DADOS"], protocol=SOCK_DGRAM)
-        control_server = ServerSocket(
-            source_ip=CONFIG["IP_ORIGEM"], port=CONFIG["PORTA_CONTROLE"], protocol=SOCK_DGRAM)
+    if SOCKET_PROTOCOL == SOCK_STREAM:
+        data_server = ServerSocketTCP(source_ip=CONFIG["IP_ORIGEM"],
+                                      port=CONFIG["PORTA_DADOS"],
+                                      # passando UDP socket type
+                                      protocol=SOCKET_PROTOCOL
+                                      )
+        control_server = ServerSocketTCP(source_ip=CONFIG["IP_ORIGEM"],
+                                         port=CONFIG["PORTA_CONTROLE"],
+                                         # passando UDP socket type
+                                         protocol=SOCKET_PROTOCOL
+                                         )
+        chat = ChatTCP(data_server=data_server, control_server=control_server)
+        # chat = Chat(data_server=data_server, control_server=control_server)
 
-        # TCP
-        # data_server = ServerSocket(
-        #     source_ip=CONFIG["IP_ORIGEM"], port=CONFIG["PORTA_DADOS"], protocol=SOCK_STREAM)
-        # control_server = ServerSocket(
-        #     source_ip=CONFIG["IP_ORIGEM"], port=CONFIG["PORTA_CONTROLE"], protocol=SOCK_STREAM)
+    elif SOCKET_PROTOCOL == SOCK_DGRAM:
+        data_server = ServerSocketUDP(source_ip=CONFIG["IP_ORIGEM"],
+                                      port=CONFIG["PORTA_DADOS"],
+                                      # passando UDP socket type
+                                      protocol=SOCK_DGRAM
+                                      )
+        control_server = ServerSocketUDP(source_ip=CONFIG["IP_ORIGEM"],
+                                         port=CONFIG["PORTA_CONTROLE"],
+                                         # passando UDP socket type
+                                         protocol=SOCK_DGRAM
+                                         )
 
         chat = Chat(data_server=data_server, control_server=control_server)
-        chat.start()
-    except KeyboardInterrupt:
-        data_server.stop_server()
-        control_server.stop_server()
-    return True
+
+    chat.start()
 
 
 if __name__ == "__main__":
