@@ -53,7 +53,6 @@ class ClientSocketUDP(ClientSocket):
         self.thread_receiver.start()
         time.sleep(1)
 
-
     def connect_socket(self):
         source_port = self.socket.getsockname()[1]
         source_ip = self.socket.getsockname()[0]
@@ -137,8 +136,6 @@ class ClientSocketTCP(ClientSocket):
         source_port = self.socket.getsockname()[1]
         source_ip = self.socket.getsockname()[0]
         self.socket.bind((source_ip, source_port))
-        # self.socket.listen(1)
-        # self.socket.connect((self.dest_ip, self.dest_port))
 
     def send_package(self, data: str, dest_port: int):
         if self.closed:
@@ -158,8 +155,6 @@ class ClientSocketTCP(ClientSocket):
             self.socket.connect((self.dest_ip, self.dest_port))
             self.connected = True
         self.socket.sendall(package)
-
-        # self.socket.sendto(package, (self.dest_ip, dest_port))
 
     def close_socket(self):
         self.closed = True

@@ -38,7 +38,6 @@ class Command:
             self.dest_name = parts[1]
             self.file_path = parts[2]
             dt = data.split(self.file_path)[-1]
-        # elif self.type == CommandsEnum.FILE.value
 
         if (dt):
             self.data = dt.strip()

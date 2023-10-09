@@ -175,10 +175,7 @@ class ChatTCP:
     def start(self):
         thread_data = threading.Thread(
             target=self._thread_data_start, args=(), daemon=True)
-        # thread_control = threading.Thread(
-        #     target=self._thread_control_start, args=(), daemon=True)
         thread_data.start()
-        # thread_control.start()
         while True:
             try:
                 if len(self.data_server.messages) > 0:
@@ -221,7 +218,6 @@ class ChatTCP:
                                 port=command.source_port,
                                 name=command.data)
             if (self.add_client(new_client)):
-                # self.data_server.connect_to_client(new_client)
                 print(f"Cliente {new_client} registrado com sucesso")
                 print(f"\n{self.clients}\n")
             else:
@@ -291,7 +287,6 @@ class ChatTCP:
         while True:
             if self.data_message is None:
                 print(f"Listening on port {port}")
-                # self.data_message = self.data_server.receive_package()
                 self.data_message = self.data_server.connect_clients()
                 if self.data_message is not None:
                     print(f"Received message: {self.data_message}")
@@ -303,7 +298,6 @@ class ChatTCP:
         while True:
             if self.control_message is None:
                 print(f"Listening on port {port}")
-                # self.control_message = self.control_server.receive_package()
                 self.control_message = self.control_server.connect_clients()
                 if self.control_message is not None:
                     print(f"Received message: {self.control_message}")

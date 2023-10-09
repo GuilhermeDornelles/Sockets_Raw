@@ -3,7 +3,6 @@ import threading
 import time
 from models.client import Client
 from models.command import Command
-from utils import format_and_validate_ip
 from abc import ABC, abstractmethod
 
 

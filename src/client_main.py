@@ -15,8 +15,8 @@ CONFIG = {
 DATA_PORT = 12345
 CONTROL_PORT = 12346
 
-# SOCKET_PROTOCOL = SOCK_DGRAM
-SOCKET_PROTOCOL = SOCK_STREAM
+SOCKET_PROTOCOL = SOCK_DGRAM    # UDP
+# SOCKET_PROTOCOL = SOCK_STREAM     # TCP
 
 
 def run_client_interface():
@@ -27,7 +27,7 @@ def run_client_interface():
     elif SOCKET_PROTOCOL == SOCK_DGRAM:
         client = ClientSocketUDP(
             dest_ip=CONFIG["IP_DESTINO"], protocol=SOCKET_PROTOCOL, disconnect_function=disconnect)
-        
+
     try:
         connected = False
         client.start()
