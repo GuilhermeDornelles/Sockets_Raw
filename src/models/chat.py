@@ -175,20 +175,18 @@ class ChatTCP:
     def start(self):
         thread_data = threading.Thread(
             target=self._thread_data_start, args=(), daemon=True)
-        thread_control = threading.Thread(
-            target=self._thread_control_start, args=(), daemon=True)
+        # thread_control = threading.Thread(
+        #     target=self._thread_control_start, args=(), daemon=True)
         thread_data.start()
-        thread_control.start()
+        # thread_control.start()
         while True:
             try:
-                if self.control_message is not None:
+                if len(self.data_server.messages) > 0:
+                    print(self.data_server.messages)
+                    message = self.data_server.messages[0]
                     self._validate_and_handle(
-                        handle_func=self.handle_control, command=self.control_message)
-                    self.control_message = None
-                if self.data_message is not None:
-                    self._validate_and_handle(
-                        handle_func=self.handle_data, command=self.data_message)
-                    self.data_message = None
+                        handle_func=self.handle_data, command=message)
+                    self.data_server.messages.remove(message)
                 time.sleep(1)
             except KeyboardInterrupt:
                 if len(self.clients) > 0:

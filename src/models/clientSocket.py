@@ -124,11 +124,10 @@ class ClientSocketTCP(ClientSocket):
         self.connect_socket()
 
     def start(self):
-        # self.thread_receiver = threading.Thread(
-        #     target=self._start_receive, args=(), daemon=True)
-        # self.thread_receiver.start()
-        # time.sleep(1)
-        pass
+        self.thread_receiver = threading.Thread(
+            target=self._start_receive, args=(), daemon=True)
+        self.thread_receiver.start()
+        time.sleep(1)
 
     def connect_socket(self):
         source_port = self.socket.getsockname()[1]
@@ -177,15 +176,18 @@ class ClientSocketTCP(ClientSocket):
         port = self.socket.getsockname()[1]
         while True:
             print(f"Client is receiving messages on port {port}")
-            # self.socket.listen(1)
-            # connection, _addr = self.socket.accept()
-            # package = connection.recv(1024)
-            # connection.close()
-            connection, _addr = self.socket.accept()
-            # package = self.socket.recv(1024)
+
+            temp_socket = socket.socket(socket.AF_INET, self.protocol)
+            temp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            source_port = self.socket.getsockname()[1]
+            source_ip = self.socket.getsockname()[0]
+            temp_socket.bind((source_ip, (source_port+1)))
+            temp_socket.listen(1)
+            connection, _addr = temp_socket.accept()
             package = connection.recv(1024)
             data = self._open_package(package)
             connection.close()
+
             if data == "":
                 break
             parts = data.split(" ")

@@ -29,6 +29,7 @@ def main():
                                          protocol=SOCKET_PROTOCOL
                                          )
         chat = ChatTCP(data_server=data_server, control_server=control_server)
+        # chat = Chat(data_server=data_server, control_server=control_server)
 
     elif SOCKET_PROTOCOL == SOCK_DGRAM:
         data_server = ServerSocketUDP(source_ip=CONFIG["IP_ORIGEM"],

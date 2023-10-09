@@ -64,18 +64,18 @@ class ServerSocketTCP(ServerSocket):
         self.bind_server(source_ip, port)
         self.port = port
         self.closed = False
+        self.messages = list()
 
     def bind_server(self, source_ip, port):
         self.socket.bind((source_ip, port))
         self.socket.listen(1)
 
     def receive_package(self, connection, addr) -> Command:
-        package = connection.recv(1024)
-        # connection.close()
-        # package = self.socket.recvfrom(1024)
-        print(f"Opening package {package}")
-        new_message = self._open_package(package=package, addr=addr)
-        return new_message
+        while not self.closed:
+            package = connection.recv(1024)
+            print(f"Opening package {package}")
+            new_message = self._open_package(package=package, addr=addr)
+            self.messages.append(new_message)
 
     def connect_clients(self) -> Command:
         while not self.closed:
@@ -91,27 +91,21 @@ class ServerSocketTCP(ServerSocket):
         print(f"Socket on port {self.port} is shutting down..")
         self.socket.close()
 
-    # def _open_package(self, package) -> Command:
-    #     data = package[0].decode("utf-8")
-    #     ip = package[0][0]
-    #     port = package[1][1]
-    #     return Command(source_ip=ip, source_port=port, data=data)
-
     def _open_package(self, package, addr) -> Command:
         data = package.decode("utf-8")
         ip = addr[0]
         port = addr[1]
         return Command(source_ip=ip, source_port=port, data=data)
 
-    # def connect_to_client(self, client):
-    #     self.socket.connect((client.ip, client.port))
-
     def send_package(self, text: str, client: Client):
         try:
-            # self.socket.connect((client.ip, client.port))
-            sent = self.socket.sendto(text.encode(
+            temp_socket = socket.socket(socket.AF_INET, self.protocol)
+            temp_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            temp_socket.connect((client.ip, (client.port+1)))
+            sent = temp_socket.sendto(text.encode(
                 "utf-8"), (client.ip, client.port))
-            print(f"sent {sent}")
-        except Exception:
+            temp_socket.close()
+        except Exception as e:
+            print(e)
             return False
         return True
