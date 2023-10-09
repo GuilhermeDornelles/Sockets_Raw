@@ -27,7 +27,7 @@ def run_client_interface():
     elif SOCKET_PROTOCOL == SOCK_DGRAM:
         client = ClientSocketUDP(
             dest_ip=CONFIG["IP_DESTINO"], protocol=SOCKET_PROTOCOL, disconnect_function=disconnect)
-
+        
     try:
         connected = False
         client.start()

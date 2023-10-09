@@ -1,3 +1,6 @@
+import threading
+import time
+from socket import SOCK_DGRAM, SOCK_STREAM
 import socket
 import threading
 import time
@@ -49,6 +52,7 @@ class ClientSocketUDP(ClientSocket):
             target=self._start_receive, args=(), daemon=True)
         self.thread_receiver.start()
         time.sleep(1)
+
 
     def connect_socket(self):
         source_port = self.socket.getsockname()[1]
